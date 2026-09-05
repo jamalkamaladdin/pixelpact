@@ -1,5 +1,14 @@
 # pixelpact
 
+## 0.3.2
+
+### Patch Changes
+
+- [`a43d8d8`](https://github.com/jamalkamaladdin/pixelpact/commit/a43d8d8f6e710111c4bf2fccc7cd2791a89f1ef9) Thanks [@jamalkamaladdin](https://github.com/jamalkamaladdin)! - Point the package descriptions and keywords at the case the tool is built for: a coding agent
+  that writes UI code and cannot see the result. The behaviour is unchanged.
+- Updated dependencies [[`a43d8d8`](https://github.com/jamalkamaladdin/pixelpact/commit/a43d8d8f6e710111c4bf2fccc7cd2791a89f1ef9)]:
+  - pixelpact-core@0.4.1
+
 ## 0.3.1
 
 ### Patch Changes

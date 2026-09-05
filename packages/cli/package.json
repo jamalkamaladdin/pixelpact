@@ -1,6 +1,6 @@
 {
   "name": "pixelpact",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "type": "module",
   "description": "Measure the UI a coding agent just built against the reference page, and get numbers back",
   "keywords": [
