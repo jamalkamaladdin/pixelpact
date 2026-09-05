@@ -1,5 +1,13 @@
 # pixelpact
 
+## 0.2.1
+
+### Patch Changes
+
+- [`d1876af`](https://github.com/jamalkamaladdin/pixelpact/commit/d1876af5ef2ba8a7e6df3720bc1665beb40de296) Thanks [@jamalkamaladdin](https://github.com/jamalkamaladdin)! - Accept `-o` as the short form of `--out`, which the documentation already used. A figma.com url
+  with no readable file key now fails with a message that says so, instead of being loaded as an
+  ordinary web page and producing a confusing complaint about flags.
+
 ## 0.2.0
 
 ### Minor Changes
