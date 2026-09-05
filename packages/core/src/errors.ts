@@ -60,3 +60,15 @@ export class TargetNotFoundError extends PixelpactError {
     super(message, 'ERR_TARGET', options)
   }
 }
+
+/**
+ * A Figma url, token or API answer stopped an extraction.
+ *
+ * The message always names the thing to fix: the environment variable to set,
+ * the file the token cannot read, or the key that was parsed out of the url.
+ */
+export class FigmaError extends PixelpactError {
+  constructor(message: string, options?: ErrorOptions) {
+    super(message, 'ERR_FIGMA', options)
+  }
+}

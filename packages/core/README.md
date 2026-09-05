@@ -50,11 +50,81 @@ For every visible element under the root selector, at every viewport:
 * the CSS custom properties declared on `:root`, and every `@keyframes` rule
 * a screenshot per viewport, when `screenshotDir` is set
 
+## Figma as a source
+
+A contract can also come from a Figma file, read over the REST API. No browser
+is launched and nothing is rendered locally.
+
+```ts
+import { extractFromFigma, check, writeContract } from 'pixelpact-core'
+
+const contract = await extractFromFigma({
+  url: 'https://www.figma.com/design/<file-key>/Site?node-id=1-23',
+  token: process.env.FIGMA_TOKEN,   // this is the default
+  screenshotDir: './pixelpact',
+})
+await writeContract('./pixelpact/figma.contract.json', contract)
+
+const report = await check(contract, { url: 'http://localhost:3000' })
+```
+
+The token is a Figma personal access token with file content read access,
+created under Settings, Security, Personal access tokens. `extractFromFigma`
+reads `FIGMA_TOKEN` unless you pass one.
+
+### Matching is different, and this is the whole story
+
+A Figma layer has no CSS selector, so a Figma contract cannot be matched by
+path or by tag name. A layer type says nothing about which HTML element
+implements it, so pixelpact does not guess. **Matching runs on the layer name.**
+
+Give the layer a name in Figma, then put the same name in the markup:
+
+```html
+<a class="btn btn-primary" data-contract="Hero/CTA">Start free</a>
+```
+
+Every layer without a matching `data-contract` is reported as missing rather
+than skipped. When a check finds no match at all, the report prints the reason
+and what to do about it; `figmaMatchHint(report)` returns the same sentence for
+a tool that formats its own output.
+
+### What a layer contributes
+
+| Figma | Contract |
+| --- | --- |
+| layer name | `contractId`, the only thing matching uses |
+| node id | `selector`, written `figma:1:23` as a display label |
+| node type | `tag`, lowercased: `frame`, `text`, `instance` |
+| `absoluteBoundingBox` | `box`, translated so the root frame sits at `0, 0` |
+| solid fill | `background-color`, or `color` on a text layer |
+| stroke and `strokeWeight` | the four border widths, `border-top-style`, `border-top-color` |
+| `cornerRadius`, `rectangleCornerRadii` | the four radius longhands |
+| drop shadow | `box-shadow` |
+| `opacity` below 1 | `opacity` |
+| text style | font family, size, weight, line height, letter spacing, alignment, transform |
+| auto layout | `display: flex`, direction, gap, the four paddings, `align-items`, `justify-content` |
+| colour styles | `tokens`, keyed by the style name |
+
+Only properties the layer actually carries are written. A gradient or image
+fill has no single CSS colour, so the property is left out and the layer is
+named in `contract.warnings`. A value that is not in the contract is never
+asserted, which is the point: an empty assertion is honest, a guessed one
+fails an implementation that is correct.
+
+Hidden layers, and everything under them, are skipped. Hover, focus and pseudo
+element states are absent, because Figma has none to read, so a check against a
+Figma contract never reports them.
+
 ## API
 
 | Function | What it does |
 | --- | --- |
 | `extract(options)` | Measure a reference page and return a `Contract` |
+| `extractFromFigma(options)` | Read a Figma file over the REST API and return a `Contract` |
+| `parseFigmaUrl(input)` | Read the file key and node id out of a figma.com url |
+| `isFigmaUrl(input)` | True when a string is a figma.com url with a file key |
+| `figmaMatchHint(report)` | The `data-contract` advice, when a Figma check matched nothing |
 | `check(contract, options)` | Compare a live implementation against the contract |
 | `diff(contract, options)` | Compare the implementation to the reference screenshot, pixel by pixel |
 | `parseContract(input)` | Validate unknown data as a contract |
@@ -66,7 +136,7 @@ For every visible element under the root selector, at every viewport:
 
 ### Options
 
-Every entry point accepts the browser options: `headless`, `channel`,
+Every browser backed entry point accepts the browser options: `headless`, `channel`,
 `executablePath`, `locale`, `timezone`, `userAgent`, `stealth`, `wait`,
 `dismissOverlays` and `timeout`. Defaults are portable: locale `en-US`,
 time zone `UTC`, and the browser's own user agent.
@@ -76,10 +146,15 @@ time zone `UTC`, and the browser's own user agent.
 `check` adds `viewport`, `selector`, `tolerance` and `maxStates`.
 `diff` adds `viewport`, `selector`, `threshold`, `masks` and `outDir`.
 
+`extractFromFigma` launches no browser, so none of the browser options apply to
+it. It takes `url`, `token`, `nodeId`, `viewportName`, `maxElements`,
+`screenshotDir`, `scale` and `onProgress`.
+
 Configuration is arguments only. Nothing is read from a config file, from the
-current working directory or from the environment, with one exception:
+current working directory or from the environment, with two exceptions:
 `executablePath` falls back to `PIXELPACT_CHROMIUM`, so a machine that already
-has a browser does not have to download another.
+has a browser does not have to download another, and the Figma `token` falls
+back to `FIGMA_TOKEN`, so a secret never has to be written into a script.
 
 `check` and `diff` inherit `locale`, `timezone`, `wait`, `stealth`,
 `dismissOverlays` and `userAgent` from the contract unless you pass your own.
@@ -128,7 +203,8 @@ three passes, most trustworthy first:
 2. An identical CSS path.
 3. The same tag carrying the same text.
 
-An element that answers to none of the three is reported as missing.
+An element that answers to none of the three is reported as missing. A Figma
+contract uses the first pass only, for the reason given above.
 
 ## Tolerances
 
@@ -162,6 +238,7 @@ Every error thrown on purpose extends `PixelpactError` and carries a `code`.
 | `BrowserUnavailableError` | `ERR_BROWSER` | playwright is not installed, or no browser could be launched |
 | `BlockedPageError` | `ERR_BLOCKED` | The page answered with a bot challenge and nothing could be measured |
 | `TargetNotFoundError` | `ERR_TARGET` | A url would not load, or a selector matched nothing |
+| `FigmaError` | `ERR_FIGMA` | The Figma url, token, file key or node id is wrong, or the API refused |
 
 ## Determinism
 

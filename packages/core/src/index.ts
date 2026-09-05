@@ -24,11 +24,16 @@ export {
   BlockedPageError,
   BrowserUnavailableError,
   ContractError,
+  FigmaError,
   PixelpactError,
   TargetNotFoundError,
 } from './errors.js'
 export { extract } from './extract.js'
-export { formatCheckReport, formatDiffReport } from './report.js'
+export { extractFromFigma } from './figma/extract.js'
+export { FIGMA_MATCH_RULE } from './figma/map.js'
+export type { FigmaTarget } from './figma/url.js'
+export { isFigmaUrl, parseFigmaUrl } from './figma/url.js'
+export { figmaMatchHint, formatCheckReport, formatDiffReport } from './report.js'
 export type {
   Box,
   BrowserOptions,
@@ -36,11 +41,14 @@ export type {
   CheckReport,
   Contract,
   ContractElement,
+  ContractSource,
   Deviation,
   DeviationState,
   DiffOptions,
   DiffReport,
   ExtractOptions,
+  FigmaExtractOptions,
+  FigmaOrigin,
   FormatOptions,
   KeyframeStep,
   ProgressEvent,

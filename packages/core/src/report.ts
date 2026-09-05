@@ -1,3 +1,4 @@
+import { FIGMA_MATCH_RULE } from './figma/map.js'
 import type { CheckReport, Deviation, DiffReport, FormatOptions } from './types.js'
 
 /** ANSI control sequence introducer, built without an escape literal. */
@@ -50,6 +51,29 @@ function propertyOf(deviation: Deviation): string {
 }
 
 const COLUMN_CAPS = [44, 24, 22, 22, 12]
+
+/**
+ * The advice a check report needs when a Figma contract matched nothing.
+ *
+ * A run where every layer is missing almost always means the implementation
+ * carries no `data-contract` attributes at all, which reads as total failure
+ * while nothing is actually wrong with the css. Returns `null` for a url
+ * contract and for any run where at least one element was found, so a caller
+ * can print it unconditionally.
+ *
+ * @returns the hint, or `null` when there is nothing to say
+ *
+ * @example
+ * ```ts
+ * const hint = figmaMatchHint(report)
+ * if (hint) process.stderr.write(hint + '\n')
+ * ```
+ */
+export function figmaMatchHint(report: CheckReport): string | null {
+  if (report.source.type !== 'figma') return null
+  if (report.totals.elements === 0 || report.totals.matched > 0) return null
+  return `Not one of the ${report.totals.elements} layers matched. ${FIGMA_MATCH_RULE}`
+}
 
 /**
  * Render a check report as a compact aligned table.
@@ -109,6 +133,12 @@ export function formatCheckReport(report: CheckReport, options: FormatOptions = 
       colour,
     ),
   )
+
+  const hint = figmaMatchHint(report)
+  if (hint) {
+    lines.push('')
+    lines.push(paint(hint, 'yellow', colour))
+  }
 
   if (report.missing.length > 0) {
     lines.push('')

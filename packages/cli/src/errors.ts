@@ -78,6 +78,16 @@ export function describeError(err: unknown, context: ErrorContext = {}): ErrorRe
     }
   }
 
+  // Matched on `code` rather than `instanceof FigmaError`: `pixelpact-core` may not export
+  // that class yet, and every error it throws is a `PixelpactError` with `code` set.
+  if (err instanceof PixelpactError && err.code === 'ERR_FIGMA') {
+    const where = context.url ? ` for ${context.url}` : ''
+    return {
+      exitCode: EXIT_RUNTIME,
+      message: `Figma extraction failed${where}: ${err.message}.`,
+    }
+  }
+
   if (err instanceof PixelpactError) {
     return { exitCode: EXIT_RUNTIME, message: `${err.code}: ${err.message}` }
   }

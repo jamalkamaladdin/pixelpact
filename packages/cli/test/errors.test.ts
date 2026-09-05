@@ -1,4 +1,4 @@
-import { BrowserUnavailableError, ContractError } from 'pixelpact-core'
+import { BrowserUnavailableError, ContractError, PixelpactError } from 'pixelpact-core'
 import { describe, expect, it } from 'vitest'
 import {
   describeError,
@@ -54,5 +54,13 @@ describe('describeError', () => {
   it('maps an unexpected error to exit code 3', () => {
     const { exitCode } = describeError(new Error('boom'))
     expect(exitCode).toBe(EXIT_RUNTIME)
+  })
+
+  it('maps a core error coded ERR_FIGMA to exit code 3 with a Figma specific message', () => {
+    const err = new PixelpactError('token cannot read this file', 'ERR_FIGMA')
+    const { exitCode, message } = describeError(err, { url: 'https://figma.com/design/abc/Site' })
+    expect(exitCode).toBe(EXIT_RUNTIME)
+    expect(message).toContain('Figma')
+    expect(message).toContain('https://figma.com/design/abc/Site')
   })
 })

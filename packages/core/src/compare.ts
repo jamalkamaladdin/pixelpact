@@ -132,6 +132,61 @@ const firstFont = (value: string): string =>
 
 const collapse = (value: string): string => String(value).replace(/\s+/g, ' ').trim()
 
+/** Split a comma separated css list without cutting inside `rgba(...)`. */
+function splitLayers(value: string): string[] {
+  const parts: string[] = []
+  let depth = 0
+  let current = ''
+  for (const character of String(value)) {
+    if (character === '(') depth++
+    if (character === ')') depth--
+    if (character === ',' && depth === 0) {
+      parts.push(current)
+      current = ''
+      continue
+    }
+    current += character
+  }
+  if (current.trim()) parts.push(current)
+  return parts
+}
+
+const COLOR_FUNCTION = /rgba?\([^)]*\)/
+/** A shadow with three lengths has an implied spread of zero. */
+const SHADOW_LENGTHS_WITHOUT_SPREAD = 3
+
+/**
+ * Rewrite one shadow layer so only what it paints decides whether it matches.
+ *
+ * A browser serialises `box-shadow` with the colour first, while css is
+ * authored with the colour last, and an omitted spread means zero. The three
+ * forms describe the same shadow, so they are brought to one form before the
+ * strings are compared.
+ */
+function normaliseShadowLayer(layer: string): string {
+  const text = collapse(layer)
+  const found = text.match(COLOR_FUNCTION)
+  const parsed = found ? parseColor(found[0]) : null
+  const colour = parsed ? `${parsed.r} ${parsed.g} ${parsed.b} ${parsed.a}` : (found?.[0] ?? '')
+
+  const rest = text.replace(COLOR_FUNCTION, ' ')
+  const inset = /\binset\b/.test(rest)
+  const lengths = rest
+    .replace(/\binset\b/g, ' ')
+    .split(/\s+/)
+    .filter(Boolean)
+  if (lengths.length === SHADOW_LENGTHS_WITHOUT_SPREAD) lengths.push('0px')
+
+  return `${lengths.join(' ')}${inset ? ' inset' : ''} ${colour}`.trim()
+}
+
+/** Compare two `box-shadow` values layer by layer, ignoring the value order. */
+function sameShadow(expected: string, actual: string): boolean {
+  const left = splitLayers(expected).map(normaliseShadowLayer)
+  const right = splitLayers(actual).map(normaliseShadowLayer)
+  return left.length === right.length && left.every((layer, index) => layer === right[index])
+}
+
 /**
  * Compare one computed property.
  *
@@ -179,10 +234,14 @@ export function compareProperty(
     return { ...base, delta: null, unit: null }
   }
 
+  if (property === 'box-shadow') {
+    if (sameShadow(expected, actual)) return null
+    return { ...base, delta: null, unit: null }
+  }
+
   if (
     property.startsWith('transition-') ||
     property.startsWith('animation-') ||
-    property === 'box-shadow' ||
     property === 'transform' ||
     property === 'background-image'
   ) {

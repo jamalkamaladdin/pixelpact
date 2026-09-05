@@ -1,0 +1,200 @@
+{
+  "name": "Marketing site",
+  "lastModified": "2026-02-01T09:30:00Z",
+  "version": "4210987654321",
+  "role": "editor",
+  "editorType": "figma",
+  "nodes": {
+    "1:23": {
+      "document": {
+        "id": "1:23",
+        "name": "Hero",
+        "type": "FRAME",
+        "absoluteBoundingBox": { "x": 120, "y": 64, "width": 1440, "height": 720 },
+        "fills": [
+          {
+            "blendMode": "NORMAL",
+            "type": "SOLID",
+            "color": { "r": 0, "g": 0.35294117647058826, "b": 0.7843137254901961, "a": 1 }
+          }
+        ],
+        "strokes": [],
+        "strokeWeight": 1,
+        "effects": [],
+        "styles": { "fill": "S:brand" },
+        "layoutMode": "VERTICAL",
+        "itemSpacing": 24,
+        "paddingTop": 48,
+        "paddingRight": 32,
+        "paddingBottom": 48,
+        "paddingLeft": 32,
+        "primaryAxisAlignItems": "CENTER",
+        "counterAxisAlignItems": "MIN",
+        "children": [
+          {
+            "id": "1:24",
+            "name": "Hero/Title",
+            "type": "TEXT",
+            "characters": "Ship what you designed",
+            "absoluteBoundingBox": { "x": 152, "y": 112, "width": 800, "height": 56 },
+            "fills": [
+              {
+                "blendMode": "NORMAL",
+                "type": "SOLID",
+                "color": { "r": 1, "g": 1, "b": 1, "a": 1 }
+              }
+            ],
+            "styles": { "fill": "S:onbrand", "text": "S:heading" },
+            "style": {
+              "fontFamily": "Inter",
+              "fontPostScriptName": "Inter-Bold",
+              "fontWeight": 700,
+              "fontSize": 48,
+              "lineHeightPx": 56,
+              "letterSpacing": -0.5,
+              "textAlignHorizontal": "LEFT",
+              "textAlignVertical": "TOP",
+              "textCase": "ORIGINAL"
+            }
+          },
+          {
+            "id": "1:25",
+            "name": "Hero/Lead",
+            "type": "TEXT",
+            "characters": "Measured, not eyeballed.",
+            "absoluteBoundingBox": { "x": 152, "y": 192, "width": 640, "height": 28 },
+            "fills": [
+              {
+                "blendMode": "NORMAL",
+                "type": "SOLID",
+                "color": { "r": 1, "g": 1, "b": 1, "a": 0.8 }
+              }
+            ],
+            "style": {
+              "fontFamily": "Inter",
+              "fontWeight": 400,
+              "fontSize": 18,
+              "lineHeightPercent": 150,
+              "letterSpacing": 0,
+              "textAlignHorizontal": "CENTER",
+              "textCase": "UPPER"
+            }
+          },
+          {
+            "id": "1:26",
+            "name": "Hero/CTA",
+            "type": "INSTANCE",
+            "opacity": 0.9,
+            "absoluteBoundingBox": { "x": 152, "y": 248, "width": 200, "height": 48 },
+            "fills": [
+              {
+                "blendMode": "NORMAL",
+                "type": "SOLID",
+                "color": { "r": 1, "g": 1, "b": 1, "a": 1 }
+              }
+            ],
+            "strokes": [
+              {
+                "blendMode": "NORMAL",
+                "type": "SOLID",
+                "color": { "r": 0, "g": 0, "b": 0, "a": 1 }
+              }
+            ],
+            "strokeWeight": 2,
+            "strokeAlign": "INSIDE",
+            "rectangleCornerRadii": [8, 8, 24, 24],
+            "effects": [
+              {
+                "type": "DROP_SHADOW",
+                "visible": true,
+                "color": { "r": 0, "g": 0, "b": 0, "a": 0.25 },
+                "blendMode": "NORMAL",
+                "offset": { "x": 0, "y": 4 },
+                "radius": 12,
+                "spread": 0
+              }
+            ],
+            "layoutMode": "HORIZONTAL",
+            "itemSpacing": 0,
+            "paddingTop": 12,
+            "paddingRight": 20,
+            "paddingBottom": 12,
+            "paddingLeft": 20,
+            "primaryAxisAlignItems": "SPACE_BETWEEN",
+            "counterAxisAlignItems": "CENTER"
+          },
+          {
+            "id": "1:27",
+            "name": "Hero/Glow",
+            "type": "RECTANGLE",
+            "absoluteBoundingBox": { "x": 900, "y": 64, "width": 540, "height": 720 },
+            "fills": [
+              {
+                "blendMode": "NORMAL",
+                "type": "GRADIENT_LINEAR",
+                "gradientHandlePositions": [
+                  { "x": 0.5, "y": 0 },
+                  { "x": 0.5, "y": 1 },
+                  { "x": 1, "y": 0 }
+                ],
+                "gradientStops": [
+                  { "color": { "r": 1, "g": 1, "b": 1, "a": 0.4 }, "position": 0 },
+                  { "color": { "r": 1, "g": 1, "b": 1, "a": 0 }, "position": 1 }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "1:28",
+            "name": "Hero/Hidden",
+            "type": "FRAME",
+            "visible": false,
+            "absoluteBoundingBox": { "x": 120, "y": 700, "width": 400, "height": 80 },
+            "children": [
+              {
+                "id": "1:29",
+                "name": "Hero/Hidden/Inner",
+                "type": "TEXT",
+                "characters": "not shipped",
+                "absoluteBoundingBox": { "x": 130, "y": 710, "width": 200, "height": 20 }
+              }
+            ]
+          },
+          {
+            "id": "1:30",
+            "name": "Hero/Card",
+            "type": "FRAME",
+            "cornerRadius": 16,
+            "absoluteBoundingBox": { "x": 200, "y": 400, "width": 300, "height": 200 },
+            "fills": [],
+            "children": [
+              {
+                "id": "1:31",
+                "name": "Hero/Card/Label",
+                "type": "TEXT",
+                "characters": "Verified",
+                "absoluteBoundingBox": { "x": 220, "y": 420, "width": 100, "height": 20 },
+                "fills": [
+                  {
+                    "blendMode": "NORMAL",
+                    "type": "SOLID",
+                    "color": { "r": 0.1, "g": 0.1, "b": 0.1, "a": 1 }
+                  }
+                ],
+                "style": { "fontFamily": "Inter", "fontSize": 14, "fontWeight": 500 }
+              }
+            ]
+          }
+        ]
+      },
+      "components": {},
+      "componentSets": {},
+      "schemaVersion": 0,
+      "styles": {
+        "S:brand": { "key": "brand", "name": "Brand/Blue 600", "styleType": "FILL" },
+        "S:onbrand": { "key": "onbrand", "name": "Brand/On Blue", "styleType": "FILL" },
+        "S:heading": { "key": "heading", "name": "Display/XL", "styleType": "TEXT" }
+      }
+    }
+  }
+}

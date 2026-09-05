@@ -68,6 +68,33 @@ export interface KeyframeStep {
 }
 
 /**
+ * Where a contract was measured from.
+ *
+ * `url` is a live page, `figma` is a design file read through the Figma REST
+ * API. The two behave differently at match time, so a reader has to be able to
+ * tell them apart: see {@link FigmaOrigin}.
+ */
+export interface ContractSource {
+  type: 'url' | 'figma'
+  value: string
+}
+
+/**
+ * The Figma coordinates a contract was extracted from.
+ *
+ * Present only when `source.type === 'figma'`. `nodeId` is `null` when the url
+ * named no node and the first page of the file was used instead.
+ */
+export interface FigmaOrigin {
+  fileKey: string
+  /** Node id in the API's colon form, for example `1:23`. */
+  nodeId: string | null
+  fileName: string
+  /** ISO 8601 timestamp Figma reports for the last edit of the file. */
+  lastModified: string
+}
+
+/**
  * A visual contract: what the reference looks like, measured rather than
  * described.
  *
@@ -79,7 +106,9 @@ export interface KeyframeStep {
  */
 export interface Contract {
   version: typeof CONTRACT_VERSION
-  source: { type: 'url'; value: string }
+  source: ContractSource
+  /** Set when the contract came out of a Figma file, absent otherwise. */
+  figma?: FigmaOrigin
   /** CSS selector the DOM walk started from. */
   root: string
   /** ISO 8601 timestamp of the extraction. */
@@ -150,6 +179,33 @@ export interface ExtractOptions extends BrowserOptions {
  */
 export type SerializedExtractOptions = Omit<Required<ExtractOptions>, 'onProgress'>
 
+/**
+ * Input to a Figma extraction.
+ *
+ * No browser is involved: the design is read over the Figma REST API, so none
+ * of the {@link BrowserOptions} apply.
+ */
+export interface FigmaExtractOptions {
+  /** Any figma.com file, design or proto url. */
+  url: string
+  /** Personal access token. Default `process.env.FIGMA_TOKEN`. */
+  token?: string
+  /**
+   * Node to extract, overriding the `node-id` in the url. Pass `null` to ignore
+   * the url's node and take the first page of the file instead.
+   */
+  nodeId?: string | null
+  /** Name the single viewport is stored under. Default `'figma'`. */
+  viewportName?: string
+  /** Layer budget. Default `600`. `0` means unbounded. */
+  maxElements?: number
+  /** Where the rendered reference png is written. Default `null`, meaning none. */
+  screenshotDir?: string | null
+  /** Render scale for that png, between 0.01 and 4. Default `1`. */
+  scale?: number
+  onProgress?: (event: ProgressEvent) => void
+}
+
 /** Input to a style check against a live implementation. */
 export interface CheckOptions extends BrowserOptions {
   url: string
@@ -210,7 +266,7 @@ export interface CheckReport {
   /** The implementation url that was measured. */
   target: string
   /** Copied from the contract, so a report says what it was compared against. */
-  source: { type: 'url'; value: string }
+  source: ContractSource
   viewport: Viewport
   checkedAt: string
   totals: {

@@ -1,0 +1,52 @@
+{
+  "name": "Marketing site",
+  "lastModified": "2026-02-01T09:30:00Z",
+  "version": "4210987654321",
+  "role": "editor",
+  "editorType": "figma",
+  "document": {
+    "id": "0:0",
+    "name": "Document",
+    "type": "DOCUMENT",
+    "children": [
+      {
+        "id": "0:1",
+        "name": "Page 1",
+        "type": "CANVAS",
+        "backgroundColor": { "r": 0.9, "g": 0.9, "b": 0.9, "a": 1 },
+        "children": [
+          {
+            "id": "2:10",
+            "name": "Panel",
+            "type": "FRAME",
+            "absoluteBoundingBox": { "x": -40, "y": 20, "width": 400, "height": 300 },
+            "fills": [
+              {
+                "blendMode": "NORMAL",
+                "type": "SOLID",
+                "color": { "r": 0.2, "g": 0.2, "b": 0.2, "a": 1 }
+              }
+            ],
+            "children": [
+              {
+                "id": "2:11",
+                "name": "Panel/Badge",
+                "type": "RECTANGLE",
+                "absoluteBoundingBox": { "x": 60, "y": 120, "width": 120, "height": 40 },
+                "cornerRadius": 20,
+                "fills": [
+                  {
+                    "blendMode": "NORMAL",
+                    "type": "SOLID",
+                    "color": { "r": 1, "g": 0.5, "b": 0, "a": 1 }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "styles": {}
+}

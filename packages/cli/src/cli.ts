@@ -1,20 +1,30 @@
 import { writeFile } from 'node:fs/promises'
 import cac from 'cac'
 import pc from 'picocolors'
-import type { CheckReport, DiffReport, ProgressEvent } from 'pixelpact-core'
+import type { CheckReport, Contract, DiffReport, ProgressEvent } from 'pixelpact-core'
 import {
   check,
   diff,
   extract,
+  extractFromFigma,
   formatCheckReport,
   formatDiffReport,
+  isFigmaUrl,
   readContract,
   writeContract,
 } from 'pixelpact-core'
 import { shouldUseColor } from './color.js'
 import { describeError, EXIT_FAIL, EXIT_OK, EXIT_USAGE, exitCodeForReport } from './errors.js'
 import type { CheckFlags, DiffFlags, ExtractFlags } from './options.js'
-import { buildCheckOptions, buildDiffOptions, buildExtractOptions } from './options.js'
+import {
+  buildCheckOptions,
+  buildDiffOptions,
+  buildExtractOptions,
+  buildFigmaExtractOptions,
+  findFigmaIncompatibleFlags,
+  findHttpIncompatibleFlags,
+  UsageError,
+} from './options.js'
 import { getVersion } from './version.js'
 
 interface Paint {
@@ -49,9 +59,41 @@ function printJson(value: unknown): void {
   process.stdout.write(`${JSON.stringify(value, null, 2)}\n`)
 }
 
-async function runExtract(url: string, flags: ExtractFlags, paint: Paint): Promise<number> {
-  const { extractOptions, out, json, quiet } = buildExtractOptions(url, flags)
-  const contract = await extract({ ...extractOptions, onProgress: makeProgressWriter(quiet) })
+async function runExtract(source: string, flags: ExtractFlags, paint: Paint): Promise<number> {
+  let contract: Contract
+  let out: string
+  let json: boolean
+  let quiet: boolean
+
+  if (isFigmaUrl(source)) {
+    const incompatible = findFigmaIncompatibleFlags(flags)
+    if (incompatible.length > 0) {
+      throw new UsageError(
+        `These flags do not apply to a Figma source: ${incompatible.join(', ')}. Remove them and try again.`,
+      )
+    }
+    const built = buildFigmaExtractOptions(source, flags)
+    out = built.out
+    json = built.json
+    quiet = built.quiet
+    contract = await extractFromFigma({
+      ...built.figmaOptions,
+      onProgress: makeProgressWriter(quiet),
+    })
+  } else {
+    const incompatible = findHttpIncompatibleFlags(flags)
+    if (incompatible.length > 0) {
+      throw new UsageError(
+        `These flags only apply to a Figma source: ${incompatible.join(', ')}. Remove them and try again.`,
+      )
+    }
+    const built = buildExtractOptions(source, flags)
+    out = built.out
+    json = built.json
+    quiet = built.quiet
+    contract = await extract({ ...built.extractOptions, onProgress: makeProgressWriter(quiet) })
+  }
+
   await writeContract(out, contract)
 
   if (json) {
@@ -65,7 +107,7 @@ async function runExtract(url: string, flags: ExtractFlags, paint: Paint): Promi
     0,
   )
   process.stdout.write(
-    `${paint.green('Extracted')} contract for ${url}: ${elementCount} element(s) across ${viewportCount} viewport(s).\n`,
+    `${paint.green('Extracted')} contract for ${source}: ${elementCount} element(s) across ${viewportCount} viewport(s).\n`,
   )
   process.stdout.write(`Written to ${out}\n`)
   if (contract.warnings.length > 0) {
@@ -137,34 +179,49 @@ export async function run(argv: string[]): Promise<number> {
   let exitCode = EXIT_OK
 
   cli
-    .command('extract <url>', 'Extract a visual contract from a live page')
+    .command('extract <source>', 'Extract a visual contract from a live page or a Figma file')
     .option('--out <path>', 'Where to write the contract JSON', {
       default: 'pixelpact.contract.json',
     })
-    .option('--selector <css>', 'Restrict extraction to this CSS selector')
+    .option('--selector <css>', 'Restrict extraction to this CSS selector (http source only)')
     .option(
       '--viewport <list>',
-      'Comma separated viewport names or WIDTHxHEIGHT pairs, repeatable',
+      'Comma separated viewport names or WIDTHxHEIGHT pairs, repeatable (http source only)',
       { type: [] },
     )
     .option('--max-elements <n>', 'Maximum number of elements to walk, 0 means unbounded')
-    .option('--max-states <n>', 'Maximum number of interactive elements to probe')
+    .option(
+      '--max-states <n>',
+      'Maximum number of interactive elements to probe (http source only)',
+    )
     .option('--mask <css>', 'CSS selector to mask out, repeatable', { type: [] })
     .option('--screenshots <dir>', 'Directory to write per-viewport screenshots to')
-    .option('--wait <ms>', 'Extra settle time in milliseconds')
-    .option('--timeout <ms>', 'Navigation timeout in milliseconds')
-    .option('--headful', 'Show the browser window instead of running headless')
-    .option('--channel <name>', 'Browser channel, e.g. chrome')
+    .option('--wait <ms>', 'Extra settle time in milliseconds (http source only)')
+    .option('--timeout <ms>', 'Navigation timeout in milliseconds (http source only)')
+    .option('--headful', 'Show the browser window instead of running headless (http source only)')
+    .option('--channel <name>', 'Browser channel, e.g. chrome (http source only)')
     .option('--locale <tag>', 'Browser locale, e.g. en-US')
     .option('--timezone <tz>', 'Browser timezone, e.g. UTC')
-    .option('--no-stealth', 'Disable stealth mode')
-    .option('--no-dismiss', 'Do not dismiss cookie banners and other overlays')
-    .option('--no-freeze', 'Do not freeze CSS animations before extracting')
-    .option('--no-full-page', 'Capture only the viewport instead of the full scrollable page')
+    .option('--no-stealth', 'Disable stealth mode (http source only)')
+    .option('--no-dismiss', 'Do not dismiss cookie banners and other overlays (http source only)')
+    .option('--no-freeze', 'Do not freeze CSS animations before extracting (http source only)')
+    .option(
+      '--no-full-page',
+      'Capture only the viewport instead of the full scrollable page (http source only)',
+    )
+    .option(
+      '--figma-token <token>',
+      'Figma personal access token, default $FIGMA_TOKEN (Figma source only)',
+    )
+    .option('--node <id>', 'Overrides the node id in the url (Figma source only)')
+    .option(
+      '--scale <n>',
+      'PNG scale for the downloaded reference image, default 1 (Figma source only)',
+    )
     .option('--json', 'Print the contract as JSON to stdout instead of a summary')
     .option('--quiet', 'Suppress progress output on stderr')
-    .action(async (url: string, flags: ExtractFlags) => {
-      exitCode = await runExtract(url, flags, paint)
+    .action(async (source: string, flags: ExtractFlags) => {
+      exitCode = await runExtract(source, flags, paint)
     })
 
   cli
@@ -215,6 +272,8 @@ export async function run(argv: string[]): Promise<number> {
       body: [
         '  $ pixelpact extract https://example.com --out example.contract.json',
         '  $ pixelpact check example.contract.json https://staging.example.com --tolerance 2',
+        '  $ pixelpact extract "https://www.figma.com/design/abc123/Site?node-id=1-23" \\',
+        '      --figma-token $FIGMA_TOKEN --out figma.contract.json',
       ].join('\n'),
     })
     sections.push({

@@ -10,22 +10,34 @@
 [![CI](https://github.com/jamalkamaladdin/pixelpact/actions/workflows/ci.yml/badge.svg)](https://github.com/jamalkamaladdin/pixelpact/actions/workflows/ci.yml)
 [![npm](https://img.shields.io/npm/v/pixelpact.svg?color=0b7285)](https://www.npmjs.com/package/pixelpact)
 [![node](https://img.shields.io/node/v/pixelpact.svg?color=0b7285)](https://nodejs.org)
-[![license](https://img.shields.io/npm/l/pixelpact.svg?color=0b7285)](./LICENSE)
+[![license](https://img.shields.io/github/license/jamalkamaladdin/pixelpact?color=0b7285)](./LICENSE)
 
 </div>
 
 Someone says the page is done. You look at it and it does not match. Nothing in the room is
 measured, so the conversation becomes opinion: that gap looks too big, no it does not.
 
-pixelpact reads the reference (a live page today, a Figma file later) and writes down what it
-actually renders: sizes, colors, spacing, typography, hover and focus states, animation
-keyframes, design tokens. That file is the **contract**. Point pixelpact at your
-implementation and it answers with numbers, one line per property that drifted.
+pixelpact reads the reference, a live page or a Figma frame, and writes down what it actually
+renders: sizes, colors, spacing, typography, hover and focus states, animation keyframes,
+design tokens. That file is the **contract**. Point pixelpact at your implementation and it
+answers with numbers, one line per property that drifted.
 
 ```bash
 npx pixelpact extract https://reference.example.com -o contract.json
 npx pixelpact check contract.json http://localhost:3000
 ```
+
+## Works with
+
+<div align="center">
+
+| **Playwright** | **MCP clients** | **GitHub Actions** | **Figma** | **Any framework** |
+| :------------: | :-------------: | :----------------: | :-------: | :---------------: |
+| the engine it drives | agents measure their own work | one comment on the pull request | frames as the reference | it reads the DOM, not your stack |
+
+*If a browser can render it, pixelpact can measure it.*
+
+</div>
 
 ## Why this is not visual regression testing
 
@@ -44,6 +56,17 @@ compare with, and the first run of a regression tool simply records whatever you
 
 The two models are complementary. Use a regression tool to keep a finished page finished, and
 pixelpact to get it finished in the first place.
+
+## Problems pixelpact solves
+
+| Without pixelpact | With pixelpact |
+| ----------------- | -------------- |
+| ❌ Someone says the section is finished, you disagree, and neither of you has a number. The louder opinion wins. | ✅ Every value in the reference is asserted against your page. What failed is listed with expected, actual and the difference. |
+| ❌ A regression tool has nothing to compare a brand new page against, so its first run records whatever you happened to build. | ✅ The reference is the baseline from the first minute. Nothing has to be approved before the tool is useful. |
+| ❌ A coding agent writes CSS, declares it done, and a person has to open the page to find out that it is not. | ✅ The agent calls the MCP server, reads the deviations, fixes them and checks again. No person in the middle. |
+| ❌ Hover, focus and animation values are almost never reviewed, because checking them by hand is slow and boring. | ✅ They are part of the contract, so they are measured on every run like any other value. |
+| ❌ An image diff tells you that something changed and leaves you to hunt for what. | ✅ Deviations name the element, the property, the expected value and the measured one. |
+| ❌ The design lives in a file nobody opens during code review. | ✅ The contract is committed JSON, so a pull request shows exactly which values moved. |
 
 ## Install
 
@@ -75,6 +98,27 @@ npx pixelpact check contract.json http://localhost:3000 --viewport desktop
 
 **3. Fix what it reports, then run it again.** The command exits `0` when everything is inside
 tolerance and `1` when it is not, so it drops straight into a script or a CI job.
+
+### From Figma instead of a live page
+
+`extract` recognises a Figma url and reads the frame through the REST API. No browser is
+launched for this step.
+
+```bash
+export FIGMA_TOKEN=figd_...
+npx pixelpact extract "https://www.figma.com/design/KEY/Name?node-id=12-345" -o contract.json
+npx pixelpact check contract.json http://localhost:3000
+```
+
+A Figma layer has no CSS selector, so a Figma contract binds to your markup through
+`data-contract` attributes. Name the element after the layer and matching stops depending on
+how the design happened to nest its frames:
+
+```html
+<a class="btn btn-primary" data-contract="Hero/CTA">Get started</a>
+```
+
+Anything with no match is reported as missing rather than guessed from tag names.
 
 ## What a contract looks like
 
@@ -150,6 +194,26 @@ shorthand sets four corners. Run the same check against the reference itself and
 assertions pass, which is the property that matters: a passing check has to mean something.
 
 Add `--json` to get the same report as a data structure, which is what CI jobs and agents read.
+
+## Features
+
+<table>
+<tr>
+<td valign="top" width="33%"><strong>Contract from the reference</strong><br><br>Reads the page you are building toward and writes down every value it renders. Nothing to approve first.</td>
+<td valign="top" width="33%"><strong>Numbers, not opinions</strong><br><br>Each deviation carries the expected value, the measured value and the difference between them.</td>
+<td valign="top" width="33%"><strong>States, not just layout</strong><br><br>Interactive elements are hovered and focused, and only the properties that actually change are stored.</td>
+</tr>
+<tr>
+<td valign="top"><strong>Tokens and keyframes</strong><br><br>Custom properties on the root element and named animation keyframes travel inside the contract.</td>
+<td valign="top"><strong>Pixel comparison</strong><br><br>When every value passes and it still looks wrong, compare the screenshots and get a percentage.</td>
+<td valign="top"><strong>Agent ready</strong><br><br>An MCP server exposes the same measurements, so a coding agent can close its own loop.</td>
+</tr>
+<tr>
+<td valign="top"><strong>Pull request checks</strong><br><br>A composite Action runs the check and keeps one comment on the pull request up to date.</td>
+<td valign="top"><strong>Plain JSON</strong><br><br>The contract is a file you can read, diff and review. No service, no account, nothing to log into.</td>
+<td valign="top"><strong>Framework agnostic</strong><br><br>It measures the rendered DOM, so React, Vue, Svelte and hand written HTML are all the same to it.</td>
+</tr>
+</table>
 
 ## Commands
 
@@ -253,14 +317,44 @@ It needs `permissions: pull-requests: write` and no secret beyond the automatic
 | [`packages/mcp`](./packages/mcp)       | `pixelpact-mcp`   | MCP server for coding agents    |
 | [`action`](./action)                   | used from GitHub   | Action for pull request checks  |
 
+## FAQ
+
+**How is this different from Percy or Chromatic?** They compare your page against a snapshot
+you approved earlier, which assumes the page is already right. pixelpact compares it against
+the reference, which is what you actually have while you are still building. The two fit
+together: pixelpact to get the page correct, a regression tool to keep it that way.
+
+**Do I need a baseline?** No. The reference is the baseline, and that is the entire point.
+
+**My markup does not match the reference structure. Will anything match?** Element matching
+tries the `data-contract` attribute first, then the selector, then the tag and its text. Put
+`data-contract="hero-cta"` on your element and matching stops depending on how the reference
+happened to nest its divs.
+
+**How does an agent use it?** Install `pixelpact-mcp`, point the MCP client at it, extract the
+contract once, then let the agent call `check_implementation` after every edit and read the
+deviation table it gets back.
+
+**The page has content that changes on every load. Will a check ever pass?** Mask it.
+`--mask ".carousel"` keeps a region out of the pixel comparison, and `--max-elements` stops a
+long page from producing a contract nobody can read.
+
+**Which browsers?** Chromium through Playwright. Running a matrix across engines is out of
+scope on purpose: this tool measures agreement with a design, not differences between browsers.
+
+**Does a passing check mean the page is correct?** It means every value in the contract matched
+inside tolerance. Elements that exist in your page but not in the reference are not flagged,
+because the contract only describes what the reference contains. Run `diff` as well when
+nothing extra is allowed.
+
 ## Status
 
-Version 0.1. Extraction, checking, the pixel diff, the MCP server and the Action are built,
-and the numbers shown above come from a real run. Planned and not built yet, so nothing here
-describes them as available:
+Extraction from a live page and from Figma, checking, the pixel diff, the MCP server and the
+Action are built, and the numbers shown above come from a real run. Planned and not built yet,
+so nothing here describes them as available:
 
-- Figma as a contract source, next to live urls
 - Section by section side by side rendering as a first class command
+- Figma variables and published styles as a token source, beyond the color styles read today
 
 ## Contributing
 

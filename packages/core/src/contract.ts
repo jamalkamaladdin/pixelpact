@@ -69,9 +69,28 @@ const optionsSchema = z.object({
   timeout: z.number().default(30000),
 })
 
+/**
+ * A contract written by 0.1.x has no `type` on its source, and every contract
+ * written before Figma existed came from a url, so the default fills that in
+ * and both shapes parse.
+ */
+const sourceSchema = z.object({
+  type: z.enum(['url', 'figma']).default('url'),
+  value: z.string().min(1),
+})
+
+/** Where in Figma the contract was taken from. Only on Figma contracts. */
+const figmaOriginSchema = z.object({
+  fileKey: z.string().min(1),
+  nodeId: z.string().nullable().default(null),
+  fileName: z.string().default(''),
+  lastModified: z.string().default(''),
+})
+
 const contractSchema = z.object({
   version: z.literal(CONTRACT_VERSION),
-  source: z.object({ type: z.literal('url'), value: z.string().min(1) }),
+  source: sourceSchema,
+  figma: figmaOriginSchema.optional(),
   root: z.string().min(1).default('body'),
   extractedAt: z.string().min(1),
   viewports: z.array(viewportSchema).min(1),
