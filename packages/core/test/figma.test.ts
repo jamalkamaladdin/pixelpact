@@ -276,17 +276,17 @@ describe('mapping a whole file page', () => {
   if (!page) throw new Error('fixture has no page')
   const result = mapFigmaTree({ root: page })
 
-  it('maps the page and everything under it', () => {
-    expect(result.elements).toHaveLength(3)
-    expect(result.elements[0].tag).toBe('canvas')
+  it('maps everything under the page and leaves the page itself out', () => {
+    expect(result.elements).toHaveLength(2)
+    expect(result.elements[0].tag).toBe('frame')
   })
 
-  it('falls back to the extent of the mapped layers for the viewport size', () => {
-    expect(result.size).toEqual({ width: 360, height: 320 })
+  it('sizes the viewport from the extent of the mapped layers', () => {
+    expect(result.size).toEqual({ width: 400, height: 300 })
   })
 
-  it('leaves an untranslated box alone when the page has no box of its own', () => {
-    expect(result.elements[1].box).toEqual({ x: -40, y: 20, w: 400, h: 300 })
+  it('moves the boxes so the outermost layer starts at the origin', () => {
+    expect(result.elements[0].box).toEqual({ x: 0, y: 0, w: 400, h: 300 })
   })
 })
 
@@ -473,5 +473,40 @@ describe('extractFromFigma, with the API answered from a fixture', () => {
     } finally {
       vi.unstubAllGlobals()
     }
+  })
+})
+
+describe('a url that points at a page rather than a frame', () => {
+  const page = {
+    id: '1:1',
+    name: 'Landing page',
+    type: 'CANVAS',
+    children: [
+      {
+        id: '2:1',
+        name: 'Frame',
+        type: 'FRAME',
+        absoluteBoundingBox: { x: -11069, y: -10528, width: 1440, height: 900 },
+        children: [
+          {
+            id: '2:2',
+            name: 'Card',
+            type: 'RECTANGLE',
+            absoluteBoundingBox: { x: -11029, y: -10488, width: 200, height: 100 },
+          },
+        ],
+      },
+    ],
+  }
+
+  it('moves the boxes so the design starts at the origin', () => {
+    const { elements } = mapFigmaTree({ root: page as never })
+    expect(elements[0]?.box).toEqual({ x: 0, y: 0, w: 1440, h: 900 })
+    expect(elements[1]?.box).toEqual({ x: 40, y: 40, w: 200, h: 100 })
+  })
+
+  it('leaves the page itself out, because a page has no box to compare', () => {
+    const { elements } = mapFigmaTree({ root: page as never })
+    expect(elements.map((element) => element.contractId)).toEqual(['Frame', 'Card'])
   })
 })

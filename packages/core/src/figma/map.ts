@@ -445,9 +445,51 @@ function collectToken(
   if (colour && !(entry.name in tokens)) tokens[entry.name] = colour
 }
 
-/** Size of the root frame, falling back to the extent of what was mapped. */
-function rootSize(root: FigmaNode, elements: ContractElement[]): { width: number; height: number } {
-  const rect = root.absoluteBoundingBox
+/**
+ * Union of the boxes on the shallowest level that has any.
+ *
+ * A url can point at a page rather than a frame, and a page carries no
+ * `absoluteBoundingBox`. Its children are the artboards, so their union is the
+ * design. Going deeper would be wrong: a frame that clips its content still
+ * reports children far outside itself, and those would inflate the size of a
+ * design nobody can see.
+ */
+function unionBounds(root: FigmaNode): FigmaRect | null {
+  let level = (root.children ?? []).filter((node) => node.visible !== false)
+
+  while (level.length > 0) {
+    const boxed = level.filter((node) => node.absoluteBoundingBox)
+    if (boxed.length > 0) {
+      let left = Number.POSITIVE_INFINITY
+      let top = Number.POSITIVE_INFINITY
+      let right = Number.NEGATIVE_INFINITY
+      let bottom = Number.NEGATIVE_INFINITY
+      for (const node of boxed) {
+        const rect = node.absoluteBoundingBox as FigmaRect
+        left = Math.min(left, rect.x)
+        top = Math.min(top, rect.y)
+        right = Math.max(right, rect.x + rect.width)
+        bottom = Math.max(bottom, rect.y + rect.height)
+      }
+      return { x: left, y: top, width: right - left, height: bottom - top }
+    }
+    level = level.flatMap((node) => (node.children ?? []).filter((c) => c.visible !== false))
+  }
+
+  return null
+}
+
+/**
+ * Size of the design: the root frame when the url named one, otherwise the artboards it
+ * contains. The extent of the mapped layers is only a last resort, because a frame that clips
+ * its content still reports children beyond its own edges.
+ */
+function rootSize(
+  root: FigmaNode,
+  bounds: FigmaRect | null,
+  elements: ContractElement[],
+): { width: number; height: number } {
+  const rect = root.absoluteBoundingBox ?? bounds
   if (rect && rect.width > 0 && rect.height > 0) {
     return {
       width: Math.max(1, Math.round(rect.width)),
@@ -479,7 +521,8 @@ function rootSize(root: FigmaNode, elements: ContractElement[]): { width: number
 export function mapFigmaTree(options: MapFigmaTreeOptions): FigmaMapping {
   const budget = options.maxElements ?? 600
   const unbounded = budget === 0
-  const origin = options.root.absoluteBoundingBox ?? { x: 0, y: 0 }
+  const bounds = unionBounds(options.root)
+  const origin = options.root.absoluteBoundingBox ?? bounds ?? { x: 0, y: 0 }
 
   const elements: ContractElement[] = []
   const tokens: Record<string, string> = {}
@@ -488,6 +531,14 @@ export function mapFigmaTree(options: MapFigmaTreeOptions): FigmaMapping {
 
   const walk = (node: FigmaNode): void => {
     if (node.visible === false) return
+
+    // A node with no box, a page or the document itself, cannot be compared with
+    // anything in a browser, so it is walked through rather than recorded.
+    if (!node.absoluteBoundingBox) {
+      for (const child of node.children ?? []) walk(child)
+      return
+    }
+
     visibleTotal++
 
     if (unbounded || elements.length < budget) {
@@ -507,6 +558,6 @@ export function mapFigmaTree(options: MapFigmaTreeOptions): FigmaMapping {
     warnings,
     truncated: !unbounded && visibleTotal > elements.length,
     visibleTotal,
-    size: rootSize(options.root, elements),
+    size: rootSize(options.root, bounds, elements),
   }
 }
