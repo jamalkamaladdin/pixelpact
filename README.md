@@ -1,6 +1,9 @@
 <div align="center">
 
-# pixelpact
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="assets/logo-dark.svg">
+  <img src="assets/logo-light.svg" alt="pixelpact" width="420">
+</picture>
 
 **Measure a UI against the design it is supposed to match, before any baseline exists.**
 
