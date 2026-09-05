@@ -154,10 +154,17 @@ describe('mapFigmaTree', () => {
     expect(mapped.size).toEqual({ width: 1440, height: 720 })
   })
 
-  it('collects colour styles as tokens and ignores text styles', () => {
+  it('collects colour styles as tokens', () => {
     expect(mapped.tokens['Brand/Blue 600']).toBe('rgb(0, 90, 200)')
     expect(mapped.tokens['Brand/On Blue']).toBe('rgb(255, 255, 255)')
-    expect(mapped.tokens['Display/XL']).toBeUndefined()
+  })
+
+  it('collects a text style as a css font shorthand', () => {
+    expect(mapped.tokens['Display/XL']).toBe('700 48px/56px Inter')
+  })
+
+  it('collects an effect style as a css box shadow', () => {
+    expect(mapped.tokens['Elevation/Card']).toBe('0px 4px 12px 0px rgba(0, 0, 0, 0.25)')
   })
 
   it('honours the layer budget and says the walk was cut short', () => {

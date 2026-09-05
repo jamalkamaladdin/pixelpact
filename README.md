@@ -120,6 +120,11 @@ how the design happened to nest its frames:
 
 Anything with no match is reported as missing rather than guessed from tag names.
 
+Published styles come across as tokens: a color style as its color, a text style as a css font
+shorthand such as `600 60px/72px Geist`, an effect style as a box shadow. A fill that is a
+gradient or an image has no single css value, so it is left out and named in the warnings
+rather than approximated.
+
 ## What a contract looks like
 
 A contract is plain JSON, readable and diffable, with no proprietary format and no service
@@ -386,9 +391,9 @@ Everything described above is built and every number shown came from a real run:
 from a live page and from Figma, checking, the pixel diff, the side by side images, the MCP
 server and the Action.
 
-Next, and not available yet, so nothing here describes it as though it were:
-
-- Figma text and effect styles as a token source, beside the color styles read today
+Version 0.3. Settled enough to use, not settled enough to promise: the contract format will
+gain fields before 1.0. If a value you need is missing from it, open an issue and say which
+one, because that is the fastest way for it to appear.
 
 ## Contributing
 

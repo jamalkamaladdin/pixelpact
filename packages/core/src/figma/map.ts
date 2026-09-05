@@ -430,19 +430,60 @@ export function mapFigmaNode(
   }
 }
 
-/** Record the colour of a node under the name of the colour style it uses. */
+/**
+ * Record a css value under the name of each published style the node uses.
+ *
+ * Figma keeps colour, typography and shadow in separate style slots, and a node can reference
+ * several at once. The first node to use a style decides its value, because a published style
+ * renders the same everywhere it is applied.
+ */
 function collectToken(
   node: FigmaNode,
   styles: StyleMap,
   meta: Record<string, FigmaStyleMeta> | undefined,
   tokens: Record<string, string>,
 ): void {
-  const styleId = node.styles?.fill
-  if (!styleId || !meta) return
-  const entry = meta[styleId]
-  if (entry?.styleType !== 'FILL') return
-  const colour = styles.color ?? styles['background-color']
-  if (colour && !(entry.name in tokens)) tokens[entry.name] = colour
+  if (!meta || !node.styles) return
+
+  for (const [slot, styleId] of Object.entries(node.styles)) {
+    const entry = meta[styleId]
+    if (!entry) continue
+    const value = tokenValue(slot, entry.styleType, styles)
+    if (value && !(entry.name in tokens)) tokens[entry.name] = value
+  }
+}
+
+/**
+ * The css value one style slot contributes, or `null` when the node carries none.
+ *
+ * A stroke style also has the type `FILL`, so the slot has to be checked as well. Otherwise a
+ * stroke style would be recorded holding the background colour of whatever it was applied to.
+ */
+function tokenValue(slot: string, styleType: string, styles: StyleMap): string | null {
+  if (styleType === 'FILL') {
+    if (slot !== 'fill' && slot !== 'fills') return null
+    return styles.color ?? styles['background-color'] ?? null
+  }
+  if (styleType === 'TEXT') return fontShorthand(styles)
+  if (styleType === 'EFFECT') return styles['box-shadow'] ?? null
+  return null
+}
+
+/**
+ * The css `font` shorthand a text style describes, for example `600 60px/72px Geist`.
+ *
+ * Returns `null` without a size or a family, since a shorthand missing either is not a value
+ * anyone can compare against a browser.
+ */
+function fontShorthand(styles: StyleMap): string | null {
+  const size = styles['font-size']
+  const family = styles['font-family']
+  if (!size || !family) return null
+
+  const lineHeight = styles['line-height']
+  const metrics = lineHeight && lineHeight !== 'normal' ? `${size}/${lineHeight}` : size
+  const weight = styles['font-weight']
+  return weight ? `${weight} ${metrics} ${family}` : `${metrics} ${family}`
 }
 
 /**
