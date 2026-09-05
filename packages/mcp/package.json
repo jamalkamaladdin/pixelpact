@@ -2,12 +2,13 @@
   "name": "pixelpact-mcp",
   "version": "0.1.4",
   "type": "module",
-  "description": "MCP server that lets a coding agent measure its own UI work against a visual contract",
+  "description": "MCP server that lets a coding agent measure the UI it just built against the reference",
   "keywords": [
     "mcp",
     "model-context-protocol",
+    "ai-agent",
+    "coding-agent",
     "visual-testing",
-    "agent",
     "playwright"
   ],
   "license": "MIT",

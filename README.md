@@ -5,7 +5,8 @@
   <img src="assets/logo-light.svg" alt="pixelpact" width="420">
 </picture>
 
-**Measure a UI against the design it is supposed to match, before any baseline exists.**
+**Your coding agent cannot see the page it just built. pixelpact measures it against the
+reference and hands back numbers.**
 
 [![CI](https://github.com/jamalkamaladdin/pixelpact/actions/workflows/ci.yml/badge.svg)](https://github.com/jamalkamaladdin/pixelpact/actions/workflows/ci.yml)
 [![npm](https://img.shields.io/npm/v/pixelpact.svg?color=0b7285)](https://www.npmjs.com/package/pixelpact)
@@ -14,13 +15,17 @@
 
 </div>
 
-Someone says the page is done. You look at it and it does not match. Nothing in the room is
-measured, so the conversation becomes opinion: that gap looks too big, no it does not.
+A coding agent writes the CSS and says it is done. It never sees the result. Nothing hands it a
+number, so the loop cannot close: the agent guesses, you open the page, you send it back, it
+guesses again. Every round costs you the one thing the agent was supposed to save.
 
-pixelpact reads the reference, a live page or a Figma frame, and writes down what it actually
-renders: sizes, colors, spacing, typography, hover and focus states, animation keyframes,
-design tokens. That file is the **contract**. Point pixelpact at your implementation and it
-answers with numbers, one line per property that drifted.
+The same gap exists without an agent, when a teammate says a section is finished and nobody in
+the room has a measurement. The difference is that a person can at least look.
+
+pixelpact reads the reference page and writes down what it actually renders: sizes, colors,
+spacing, typography, hover and focus states, animation keyframes, design tokens. That file is
+the **contract**. Point pixelpact at the implementation and it answers with one line per
+property that drifted, which is precisely what an agent can act on.
 
 ```bash
 npx pixelpact extract https://reference.example.com -o contract.json
@@ -31,13 +36,31 @@ npx pixelpact check contract.json http://localhost:3000
 
 <div align="center">
 
-| **Playwright** | **MCP clients** | **GitHub Actions** | **Figma** | **Any framework** |
-| :------------: | :-------------: | :----------------: | :-------: | :---------------: |
-| the engine it drives | agents measure their own work | one comment on the pull request | frames as the reference | it reads the DOM, not your stack |
+| **MCP clients** | **Playwright** | **GitHub Actions** | **Any framework** | **Figma** |
+| :-------------: | :------------: | :----------------: | :---------------: | :-------: |
+| Claude Code, Cursor, anything that speaks stdio MCP | the engine it drives | one comment on the pull request | it reads the DOM, not your stack | a frame as the reference, when you want one |
 
 *If a browser can render it, pixelpact can measure it.*
 
 </div>
+
+## For coding agents
+
+An agent that writes UI code cannot tell whether it succeeded. `pixelpact-mcp` gives it the
+measurement, so the loop closes without a person in the middle: extract the contract once,
+then let the agent check its own work, read the deviation list, fix, and check again.
+
+```jsonc
+// .mcp.json
+{
+  "mcpServers": {
+    "pixelpact": { "command": "npx", "args": ["-y", "pixelpact-mcp"] }
+  }
+}
+```
+
+Tools exposed: `extract_contract`, `check_implementation`, `diff_pixels`,
+`read_contract_summary`.
 
 ## Why this is not visual regression testing
 
@@ -61,9 +84,9 @@ pixelpact to get it finished in the first place.
 
 | Without pixelpact | With pixelpact |
 | ----------------- | -------------- |
+| ❌ A coding agent writes CSS, declares it done, and a person has to open the page to find out that it is not. | ✅ The agent calls the MCP server, reads the deviations, fixes them and checks again. No person in the middle. |
 | ❌ Someone says the section is finished, you disagree, and neither of you has a number. The louder opinion wins. | ✅ Every value in the reference is asserted against your page. What failed is listed with expected, actual and the difference. |
 | ❌ A regression tool has nothing to compare a brand new page against, so its first run records whatever you happened to build. | ✅ The reference is the baseline from the first minute. Nothing has to be approved before the tool is useful. |
-| ❌ A coding agent writes CSS, declares it done, and a person has to open the page to find out that it is not. | ✅ The agent calls the MCP server, reads the deviations, fixes them and checks again. No person in the middle. |
 | ❌ Hover, focus and animation values are almost never reviewed, because checking them by hand is slow and boring. | ✅ They are part of the contract, so they are measured on every run like any other value. |
 | ❌ An image diff tells you that something changed and leaves you to hunt for what. | ✅ Deviations name the element, the property, the expected value and the measured one. |
 | ❌ The design lives in a file nobody opens during code review. | ✅ The contract is committed JSON, so a pull request shows exactly which values moved. |
@@ -98,32 +121,6 @@ npx pixelpact check contract.json http://localhost:3000 --viewport desktop
 
 **3. Fix what it reports, then run it again.** The command exits `0` when everything is inside
 tolerance and `1` when it is not, so it drops straight into a script or a CI job.
-
-### From Figma instead of a live page
-
-`extract` recognises a Figma url and reads the frame through the REST API. No browser is
-launched for this step.
-
-```bash
-export FIGMA_TOKEN=figd_...
-npx pixelpact extract "https://www.figma.com/design/KEY/Name?node-id=12-345" -o contract.json
-npx pixelpact check contract.json http://localhost:3000
-```
-
-A Figma layer has no CSS selector, so a Figma contract binds to your markup through
-`data-contract` attributes. Name the element after the layer and matching stops depending on
-how the design happened to nest its frames:
-
-```html
-<a class="btn btn-primary" data-contract="Hero/CTA">Get started</a>
-```
-
-Anything with no match is reported as missing rather than guessed from tag names.
-
-Published styles come across as tokens: a color style as its color, a text style as a css font
-shorthand such as `600 60px/72px Geist`, an effect style as a box shadow. A fill that is a
-gradient or an image has no single css value, so it is left out and named in the warnings
-rather than approximated.
 
 ## What a contract looks like
 
@@ -296,24 +293,6 @@ if (!report.ok) process.exitCode = 1
 Everything is typed, and the contract and report shapes are validated at the boundary, so a
 malformed file fails with a readable message instead of a stack trace.
 
-## For coding agents
-
-An agent that writes UI code cannot tell whether it succeeded. `pixelpact-mcp` gives it the
-measurement, so the loop closes without a person in the middle: extract the contract once,
-then let the agent check its own work, read the deviation list, fix, and check again.
-
-```jsonc
-// .mcp.json
-{
-  "mcpServers": {
-    "pixelpact": { "command": "npx", "args": ["-y", "pixelpact-mcp"] }
-  }
-}
-```
-
-Tools exposed: `extract_contract`, `check_implementation`, `diff_pixels`,
-`read_contract_summary`.
-
 ## In CI
 
 The Action measures a preview deployment against the contract committed in the repository and
@@ -331,6 +310,32 @@ keeps a single pull request comment up to date instead of adding one per push.
 It needs `permissions: pull-requests: write` and no secret beyond the automatic
 `GITHUB_TOKEN`. Every input, every output and a complete workflow are in
 [action/README.md](./action/README.md).
+
+## Reading a Figma frame
+
+`extract` recognises a Figma url and reads the frame through the REST API. No browser is
+launched for this step.
+
+```bash
+export FIGMA_TOKEN=figd_...
+npx pixelpact extract "https://www.figma.com/design/KEY/Name?node-id=12-345" -o contract.json
+npx pixelpact check contract.json http://localhost:3000
+```
+
+A Figma layer has no CSS selector, so a Figma contract binds to your markup through
+`data-contract` attributes. Name the element after the layer and matching stops depending on
+how the design happened to nest its frames:
+
+```html
+<a class="btn btn-primary" data-contract="Hero/CTA">Get started</a>
+```
+
+Anything with no match is reported as missing rather than guessed from tag names.
+
+Published styles come across as tokens: a color style as its color, a text style as a css font
+shorthand such as `600 60px/72px Geist`, an effect style as a box shadow. A fill that is a
+gradient or an image has no single css value, so it is left out and named in the warnings
+rather than approximated.
 
 ## How it works
 
@@ -357,6 +362,10 @@ It needs `permissions: pull-requests: write` and no secret beyond the automatic
 
 ## FAQ
 
+**How does an agent use it?** Install `pixelpact-mcp`, point the MCP client at it, extract the
+contract once, then let the agent call `check_implementation` after every edit and read the
+deviation table it gets back.
+
 **How is this different from Percy or Chromatic?** They compare your page against a snapshot
 you approved earlier, which assumes the page is already right. pixelpact compares it against
 the reference, which is what you actually have while you are still building. The two fit
@@ -368,10 +377,6 @@ together: pixelpact to get the page correct, a regression tool to keep it that w
 tries the `data-contract` attribute first, then the selector, then the tag and its text. Put
 `data-contract="hero-cta"` on your element and matching stops depending on how the reference
 happened to nest its divs.
-
-**How does an agent use it?** Install `pixelpact-mcp`, point the MCP client at it, extract the
-contract once, then let the agent call `check_implementation` after every edit and read the
-deviation table it gets back.
 
 **The page has content that changes on every load. Will a check ever pass?** Mask it.
 `--mask ".carousel"` keeps a region out of the pixel comparison, and `--max-elements` stops a

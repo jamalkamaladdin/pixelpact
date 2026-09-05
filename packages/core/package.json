@@ -4,6 +4,8 @@
   "type": "module",
   "description": "Extract a visual contract from a reference page and measure an implementation against it",
   "keywords": [
+    "ai-agent",
+    "coding-agent",
     "visual-testing",
     "design-system",
     "playwright",
