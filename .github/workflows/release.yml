@@ -6,6 +6,8 @@ on:
   push:
     branches:
       - main
+    paths:
+      - '.changeset/**'
   workflow_dispatch:
 
 concurrency:
@@ -32,8 +34,6 @@ jobs:
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v6
-        with:
-          version: 11
 
       - name: Setup Node
         uses: actions/setup-node@v7

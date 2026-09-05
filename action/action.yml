@@ -1,0 +1,206 @@
+name: pixelpact check
+description: >-
+  Measure a deployed or locally served page against a pixelpact visual
+  contract and post the deviation table as a pull request comment.
+author: jamalkamaladdin
+branding:
+  icon: target
+  color: purple
+
+inputs:
+  contract:
+    description: Path to the contract JSON file in the repository.
+    required: true
+  url:
+    description: URL of the implementation to measure.
+    required: true
+  viewport:
+    description: Viewport name from the contract to check. Leave empty to use the CLI default.
+    required: false
+    default: ''
+  selector:
+    description: CSS selector to scope the check to. Leave empty to check the whole contract.
+    required: false
+    default: ''
+  tolerance:
+    description: Pixel tolerance passed to the check command. Leave empty to use the CLI default.
+    required: false
+    default: ''
+  version:
+    description: pixelpact version to run with npx.
+    required: false
+    default: latest
+  comment:
+    description: Whether to post or update a pull request comment with the result.
+    required: false
+    default: 'true'
+  fail-on-deviation:
+    description: Whether a deviation or missing selector fails the job.
+    required: false
+    default: 'true'
+  report-path:
+    description: Where to write the JSON check report.
+    required: false
+    default: pixelpact-report.json
+
+outputs:
+  ok:
+    description: '"true" when the check passed cleanly, "false" otherwise.'
+    value: ${{ steps.pixelpact.outputs.ok }}
+  pass-rate:
+    description: Fraction of checked properties that passed, between 0 and 1.
+    value: ${{ steps.pixelpact.outputs.pass-rate }}
+  deviations:
+    description: Count of property checks that failed.
+    value: ${{ steps.pixelpact.outputs.deviations }}
+  missing:
+    description: Count of contract selectors that were not found on the page.
+    value: ${{ steps.pixelpact.outputs.missing }}
+  report-path:
+    description: Path to the JSON report file that was written.
+    value: ${{ steps.pixelpact.outputs.report-path }}
+
+runs:
+  using: composite
+  steps:
+    - name: Set up Node.js
+      uses: actions/setup-node@v7
+      with:
+        node-version: '24'
+
+    - name: Install Chromium for Playwright
+      shell: bash
+      run: npx --yes playwright install --with-deps chromium
+
+    - name: Run pixelpact check
+      id: pixelpact
+      shell: bash
+      run: |
+        set +e
+        args=(check "${{ inputs.contract }}" "${{ inputs.url }}" --out "${{ inputs.report-path }}")
+        if [ -n "${{ inputs.viewport }}" ]; then
+          args+=(--viewport "${{ inputs.viewport }}")
+        fi
+        if [ -n "${{ inputs.selector }}" ]; then
+          args+=(--selector "${{ inputs.selector }}")
+        fi
+        if [ -n "${{ inputs.tolerance }}" ]; then
+          args+=(--tolerance "${{ inputs.tolerance }}")
+        fi
+
+        npx --yes "pixelpact@${{ inputs.version }}" "${args[@]}"
+        check_exit=$?
+        set -e
+
+        if [ -f "${{ inputs.report-path }}" ]; then
+          ok=$(node -e "const r=JSON.parse(require('fs').readFileSync(process.argv[1],'utf8'));console.log(r.ok)" "${{ inputs.report-path }}")
+          pass_rate=$(node -e "const r=JSON.parse(require('fs').readFileSync(process.argv[1],'utf8'));console.log(r.passRate)" "${{ inputs.report-path }}")
+          deviations=$(node -e "const r=JSON.parse(require('fs').readFileSync(process.argv[1],'utf8'));console.log(r.totals.failed)" "${{ inputs.report-path }}")
+          missing=$(node -e "const r=JSON.parse(require('fs').readFileSync(process.argv[1],'utf8'));console.log(r.missing.length)" "${{ inputs.report-path }}")
+        else
+          if [ "$check_exit" -eq 0 ]; then
+            ok=true
+          else
+            ok=false
+          fi
+          pass_rate=0
+          deviations=0
+          missing=0
+        fi
+
+        echo "ok=$ok" >> "$GITHUB_OUTPUT"
+        echo "pass-rate=$pass_rate" >> "$GITHUB_OUTPUT"
+        echo "deviations=$deviations" >> "$GITHUB_OUTPUT"
+        echo "missing=$missing" >> "$GITHUB_OUTPUT"
+        echo "report-path=${{ inputs.report-path }}" >> "$GITHUB_OUTPUT"
+        echo "check-exit=$check_exit" >> "$GITHUB_OUTPUT"
+
+    - name: Post or update the pull request comment
+      if: ${{ (github.event_name == 'pull_request' || github.event_name == 'pull_request_target') && inputs.comment == 'true' }}
+      uses: actions/github-script@v8
+      with:
+        script: |
+          const fs = require('fs');
+          const reportPath = '${{ inputs.report-path }}';
+          const marker = '<!-- pixelpact-report -->';
+
+          let report = null;
+          try {
+            report = JSON.parse(fs.readFileSync(reportPath, 'utf8'));
+          } catch (error) {
+            core.warning(`could not read pixelpact report at ${reportPath}: ${error.message}`);
+          }
+
+          let body;
+          if (!report) {
+            body = [
+              marker,
+              '## pixelpact: no report',
+              `The report file at \`${reportPath}\` was not found or could not be parsed. Check the job log for the pixelpact command output.`
+            ].join('\n\n');
+          } else {
+            const heading = report.ok ? 'pixelpact: pass' : 'pixelpact: fail';
+            const totals = report.totals;
+            const passRatePct = (report.passRate * 100).toFixed(1);
+            const totalsLine = `Checked ${totals.checks} properties across ${totals.elements} elements, on viewport ${report.viewport.name} (${report.viewport.width}x${report.viewport.height}). Passed ${totals.passed}, failed ${totals.failed}, pass rate ${passRatePct} percent.`;
+
+            const maxRows = 25;
+            const deviations = report.deviations || [];
+            const shown = deviations.slice(0, maxRows);
+
+            let table;
+            if (shown.length > 0) {
+              const header = '| Selector | State | Property | Expected | Actual | Delta |\n| --- | --- | --- | --- | --- | --- |';
+              const rows = shown
+                .map((d) => `| \`${d.selector}\` | ${d.state} | ${d.property} | ${d.expected} | ${d.actual} | ${d.delta}${d.unit || ''} |`)
+                .join('\n');
+              table = `${header}\n${rows}`;
+              if (deviations.length > maxRows) {
+                table += `\n\n${deviations.length - maxRows} more deviations were cut from this table. See the full report artifact or job log for the rest.`;
+              }
+            } else {
+              table = 'No property deviations found.';
+            }
+
+            let missingBlock = '';
+            const missing = report.missing || [];
+            if (missing.length > 0) {
+              const items = missing.map((s) => `- \`${s}\``).join('\n');
+              missingBlock = `\n\n<details>\n<summary>Missing selectors (${missing.length})</summary>\n\n${items}\n\n</details>`;
+            }
+
+            body = [marker, `## ${heading}`, totalsLine, table].join('\n\n') + missingBlock;
+          }
+
+          const { data: comments } = await github.rest.issues.listComments({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            issue_number: context.issue.number,
+            per_page: 100
+          });
+          const existing = comments.find((c) => c.body && c.body.includes(marker));
+
+          if (existing) {
+            await github.rest.issues.updateComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              comment_id: existing.id,
+              body
+            });
+          } else {
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body
+            });
+          }
+
+    - name: Fail on deviation
+      if: ${{ inputs.fail-on-deviation == 'true' }}
+      shell: bash
+      run: |
+        if [ "${{ steps.pixelpact.outputs.ok }}" != "true" ]; then
+          echo "pixelpact found deviations against the visual contract, or the check did not run cleanly."
+          exit 1
+        fi
