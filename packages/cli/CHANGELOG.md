@@ -1,5 +1,12 @@
 # pixelpact
 
+## 0.3.1
+
+### Patch Changes
+
+- Updated dependencies [[`a2ae7ff`](https://github.com/jamalkamaladdin/pixelpact/commit/a2ae7ff125a9980eb407b7d44b03eaecfae58b9d)]:
+  - pixelpact-core@0.4.0
+
 ## 0.3.0
 
 ### Minor Changes

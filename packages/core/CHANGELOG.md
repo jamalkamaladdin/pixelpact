@@ -1,5 +1,16 @@
 # pixelpact-core
 
+## 0.4.0
+
+### Minor Changes
+
+- [`a2ae7ff`](https://github.com/jamalkamaladdin/pixelpact/commit/a2ae7ff125a9980eb407b7d44b03eaecfae58b9d) Thanks [@jamalkamaladdin](https://github.com/jamalkamaladdin)! - Read Figma text and effect styles as tokens, beside the color styles already read. A text style
+  becomes a css font shorthand such as `600 60px/72px Geist` and an effect style becomes a box
+  shadow, so both can be compared against a browser without any translation step.
+  
+  A stroke style also carries the type `FILL` in the api, and was previously able to take the
+  background color of whatever it was applied to. Only the fill slot contributes a color now.
+
 ## 0.3.1
 
 ### Patch Changes

@@ -1,6 +1,6 @@
 {
   "name": "pixelpact-core",
-  "version": "0.3.1",
+  "version": "0.4.0",
   "type": "module",
   "description": "Extract a visual contract from a reference page and measure an implementation against it",
   "keywords": [
