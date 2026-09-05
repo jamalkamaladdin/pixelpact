@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Ask a question
+    url: https://github.com/jamalkamaladdin/pixelpact/discussions
+    about: Use Discussions for questions about usage, setup, or how something works.

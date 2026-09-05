@@ -1,0 +1,58 @@
+{
+  "name": "@pixelpact/core",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Extract a visual contract from a reference page and measure an implementation against it",
+  "keywords": [
+    "visual-testing",
+    "design-system",
+    "playwright",
+    "css",
+    "contract",
+    "figma"
+  ],
+  "license": "MIT",
+  "homepage": "https://github.com/jamalkamaladdin/pixelpact#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jamalkamaladdin/pixelpact.git",
+    "directory": "packages/core"
+  },
+  "bugs": "https://github.com/jamalkamaladdin/pixelpact/issues",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "engines": {
+    "node": ">=20.19"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "pixelmatch": "^7.2.0",
+    "pngjs": "^7.0.0",
+    "zod": "^4.5.4"
+  },
+  "peerDependencies": {
+    "playwright": ">=1.45.0"
+  },
+  "devDependencies": {
+    "@types/node": "^26.4.1",
+    "@types/pngjs": "^6.0.5",
+    "playwright": "^1.63.0"
+  }
+}

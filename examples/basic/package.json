@@ -1,0 +1,14 @@
+{
+  "name": "@pixelpact/example-basic",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Extract a contract from a reference page and check a local implementation against it",
+  "scripts": {
+    "start": "node extract-and-check.mjs"
+  },
+  "dependencies": {
+    "@pixelpact/core": "workspace:^",
+    "playwright": "^1.63.0"
+  }
+}

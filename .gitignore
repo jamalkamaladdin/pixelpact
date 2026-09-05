@@ -1,8 +1,17 @@
+node_modules/
+dist/
+coverage/
+*.tsbuildinfo
 
 .env
 .env.local
+!.env.example
 .direnv/
+
+# Work layer, not part of the published project
 docs/
 CLAUDE.md
 AGENTS.md
-!.env.example
+
+.DS_Store
+*.log

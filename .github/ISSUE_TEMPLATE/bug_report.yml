@@ -1,0 +1,82 @@
+name: Bug report
+description: Report something in pixelpact that is not working as expected.
+title: "[bug]: "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for filing a report. The more detail you give, the faster this gets fixed.
+
+  - type: input
+    id: version
+    attributes:
+      label: pixelpact version
+      description: Output of `pixelpact --version`, or the version pinned in your package.json.
+      placeholder: "0.1.0"
+    validations:
+      required: true
+
+  - type: input
+    id: node-version
+    attributes:
+      label: Node version
+      description: Output of `node --version`.
+      placeholder: "v20.19.0"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: os
+    attributes:
+      label: Operating system
+      options:
+        - macOS
+        - Linux
+        - Windows
+        - Windows (WSL)
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: command
+    attributes:
+      label: Exact command that was run
+      description: Paste the full command, including flags.
+      render: shell
+      placeholder: pixelpact check --contract ./contract.json --url http://localhost:3000
+    validations:
+      required: true
+
+  - type: textarea
+    id: reference
+    attributes:
+      label: Reference url or contract file
+      description: The url a contract was extracted from, or the contract file used for the check. Attach the file if it is not sensitive.
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: What was expected
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: What happened
+      description: Include the full error output or a screenshot if there is one.
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: playwright
+    attributes:
+      label: Environment check
+      options:
+        - label: Playwright is installed and its browser binaries were downloaded (`pnpm exec playwright install chromium` or equivalent).
+          required: true

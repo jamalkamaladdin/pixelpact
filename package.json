@@ -1,0 +1,36 @@
+{
+  "name": "pixelpact-monorepo",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Extract a visual contract from a reference and measure an implementation against it",
+  "license": "MIT",
+  "packageManager": "pnpm@11.21.0",
+  "engines": {
+    "node": ">=20.19"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jamalkamaladdin/pixelpact.git"
+  },
+  "scripts": {
+    "build": "pnpm -r --filter \"./packages/*\" --sequential build",
+    "typecheck": "pnpm build && pnpm -r --filter \"./packages/*\" --parallel typecheck",
+    "lint": "biome check .",
+    "format": "biome check --write .",
+    "test": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "changeset": "changeset",
+    "version-packages": "changeset version",
+    "release": "pnpm build && changeset publish"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.5.12",
+    "@changesets/changelog-github": "^0.5.1",
+    "@changesets/cli": "^3.0.2",
+    "@types/node": "^26.4.1",
+    "@vitest/coverage-v8": "^5.0.0",
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.0"
+  }
+}

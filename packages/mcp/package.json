@@ -1,0 +1,57 @@
+{
+  "name": "@pixelpact/mcp",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "MCP server that lets a coding agent measure its own UI work against a visual contract",
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "visual-testing",
+    "agent",
+    "playwright"
+  ],
+  "license": "MIT",
+  "homepage": "https://github.com/jamalkamaladdin/pixelpact#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jamalkamaladdin/pixelpact.git",
+    "directory": "packages/mcp"
+  },
+  "bugs": "https://github.com/jamalkamaladdin/pixelpact/issues",
+  "bin": {
+    "pixelpact-mcp": "./dist/bin.js"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "engines": {
+    "node": ">=20.19"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.30.0",
+    "@pixelpact/core": "workspace:^",
+    "zod": "^4.5.4"
+  },
+  "peerDependencies": {
+    "playwright": ">=1.45.0"
+  },
+  "devDependencies": {
+    "@types/node": "^26.4.1",
+    "playwright": "^1.63.0"
+  }
+}

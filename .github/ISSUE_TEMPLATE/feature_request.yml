@@ -1,0 +1,30 @@
+name: Feature request
+description: Propose something pixelpact should do that it does not do today.
+title: "[feature]: "
+labels:
+  - enhancement
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem is behind this request
+      description: Describe the situation, not the solution yet.
+    validations:
+      required: true
+
+  - type: textarea
+    id: workaround
+    attributes:
+      label: What workaround are you using today
+      description: Scripts, manual steps, another tool, or none.
+    validations:
+      required: true
+
+  - type: textarea
+    id: ideal
+    attributes:
+      label: What would the ideal command or api look like
+      description: A sketch of the command line invocation or api call you would want to write.
+      render: shell
+    validations:
+      required: false
