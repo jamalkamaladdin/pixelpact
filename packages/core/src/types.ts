@@ -236,6 +236,78 @@ export interface DiffOptions extends BrowserOptions {
   onProgress?: (event: ProgressEvent) => void
 }
 
+/**
+ * Input to a side by side section comparison.
+ *
+ * Both pages are loaded at every width in `widths`, split into sections, and
+ * compared section against section, so the result says *where* a page is wrong
+ * rather than only by how much.
+ */
+export interface SideOptions extends BrowserOptions {
+  /** The page being reproduced. */
+  referenceUrl: string
+  /** The implementation being held to it. */
+  targetUrl: string
+  /** Where the composed images are written. Created when it does not exist. */
+  outDir: string
+  /** Viewport widths, one pass each. Default `[1440, 390]`. */
+  widths?: number[]
+  /**
+   * Container whose element children are the sections. Default `null`, meaning
+   * `main` when the page has one and `body` otherwise.
+   */
+  sectionsSelector?: string | null
+  /** Freeze css animations and transitions before capturing. Default `true`. */
+  freezeAnimations?: boolean
+  /** Compare one section only, by 1-based index or by slug. Default `null`. */
+  only?: string | number | null
+  /** Share of differing pixels a section may have and still pass. Default `0.5`. */
+  threshold?: number
+  /** Children shorter than this are slivers, not sections. Default `24`. */
+  minSectionHeight?: number
+  /** Width of each half of the composed image, in pixels. Default `900`. */
+  columnWidth?: number
+  /** Selectors painted over in both screenshots. */
+  masks?: string[]
+  onProgress?: (event: ProgressEvent) => void
+}
+
+/** One section, compared at one width. */
+export interface SideSection {
+  /** 1-based position among the sections of the page. */
+  index: number
+  /** From the `id`, else the first heading, else `section-N`. Unique per width. */
+  slug: string
+  /** What a person reads: the heading text, or a selector that locates it. */
+  label: string
+  /** The viewport width this pair was captured at. */
+  width: number
+  totalPixels: number
+  differentPixels: number
+  differentPercent: number
+  ok: boolean
+  /** Absolute path of the composed side by side png. */
+  image: string
+  /** Difference clusters, in the coordinates of the compared canvas. */
+  boxes: Box[]
+}
+
+/** Result of a side by side section comparison. */
+export interface SideReport {
+  version: typeof CONTRACT_VERSION
+  reference: string
+  target: string
+  checkedAt: string
+  widths: number[]
+  threshold: number
+  sections: SideSection[]
+  /** Sections with no counterpart on the other page, summed over every width. */
+  unmatched: { reference: number; target: number }
+  totals: { sections: number; passed: number; failed: number }
+  ok: boolean
+  warnings: string[]
+}
+
 /** Progress notification. The library never prints; callers do. */
 export interface ProgressEvent {
   phase: 'launch' | 'navigate' | 'extract' | 'states' | 'screenshot' | 'compare' | 'done'

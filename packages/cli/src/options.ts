@@ -4,6 +4,7 @@ import type {
   DiffOptions,
   ExtractOptions,
   FigmaExtractOptions,
+  SideOptions,
   Viewport,
 } from 'pixelpact-core'
 import { DEFAULT_VIEWPORTS, isFigmaUrl } from 'pixelpact-core'
@@ -361,6 +362,92 @@ export function buildDiffOptions(url: string, flags: DiffFlags): DiffCliOptions 
 
   return {
     diffOptions,
+    json: flags.json ?? false,
+    quiet: flags.quiet ?? false,
+  }
+}
+
+/** Where `side` writes its composed images when `--out-dir` is not passed. */
+export const DEFAULT_SIDE_OUT_DIR = '.pixelpact/side'
+
+/**
+ * Parses the `--widths` flag: a comma separated list of positive integers, e.g.
+ * `1440,390` or a single `1440`. Each part is validated on its own so a bad value in a
+ * longer list names the exact token that failed rather than the whole flag.
+ */
+export function resolveWidths(value: unknown): number[] | undefined {
+  if (value === undefined) return undefined
+  const raw = Array.isArray(value) ? value.join(',') : String(value)
+  const parts = raw
+    .split(',')
+    .map((part) => part.trim())
+    .filter((part) => part.length > 0)
+  if (parts.length === 0) return undefined
+  return parts.map((part) => {
+    const n = Number(part)
+    if (!Number.isFinite(n) || n <= 0 || !Number.isInteger(n)) {
+      throw new UsageError(
+        `Invalid value for --widths: "${part}". Expected a comma separated list of positive integers, e.g. 1440,390.`,
+      )
+    }
+    return n
+  })
+}
+
+/** Parses the `--only` flag: a bare integer is a section index, anything else is a slug. */
+export function resolveOnly(value: unknown): string | number | undefined {
+  if (value === undefined) return undefined
+  const trimmed = String(value).trim()
+  if (trimmed.length === 0) return undefined
+  return /^\d+$/.test(trimmed) ? Number(trimmed) : trimmed
+}
+
+export interface SideFlags extends BrowserFlags {
+  widths?: string
+  sections?: string
+  only?: string | number
+  threshold?: string | number
+  outDir?: string
+  mask?: CacListFlag
+  columnWidth?: string | number
+  freeze?: boolean
+  json?: boolean
+  quiet?: boolean
+}
+
+export interface SideCliOptions {
+  sideOptions: Omit<SideOptions, 'onProgress'>
+  json: boolean
+  quiet: boolean
+}
+
+/** Builds the options for `side`, the only command that requires an output directory. */
+export function buildSideOptions(
+  referenceUrl: string,
+  targetUrl: string,
+  flags: SideFlags,
+): SideCliOptions {
+  const sideOptions: Omit<SideOptions, 'onProgress'> = {
+    referenceUrl,
+    targetUrl,
+    outDir: flags.outDir ?? DEFAULT_SIDE_OUT_DIR,
+    ...buildBrowserOptions(flags),
+  }
+  if (flags.freeze !== undefined) sideOptions.freezeAnimations = flags.freeze
+  if (flags.sections !== undefined) sideOptions.sectionsSelector = flags.sections
+  const widths = resolveWidths(flags.widths)
+  if (widths !== undefined) sideOptions.widths = widths
+  const only = resolveOnly(flags.only)
+  if (only !== undefined) sideOptions.only = only
+  const threshold = toNonNegativeNumber(flags.threshold, '--threshold')
+  if (threshold !== undefined) sideOptions.threshold = threshold
+  const columnWidth = toNonNegativeInt(flags.columnWidth, '--column-width')
+  if (columnWidth !== undefined) sideOptions.columnWidth = columnWidth
+  const masks = toStringArray(flags.mask)
+  if (masks !== undefined) sideOptions.masks = masks
+
+  return {
+    sideOptions,
     json: flags.json ?? false,
     quiet: flags.quiet ?? false,
   }

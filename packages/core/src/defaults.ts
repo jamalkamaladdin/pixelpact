@@ -5,6 +5,7 @@ import type {
   DiffOptions,
   ExtractOptions,
   SerializedExtractOptions,
+  SideOptions,
   Viewport,
 } from './types.js'
 
@@ -21,6 +22,14 @@ export const DEFAULT_VIEWPORTS: Viewport[] = [
   { name: 'tablet', width: 768, height: 1024 },
   { name: 'mobile', width: 390, height: 844 },
 ]
+
+/**
+ * The widths a side by side comparison runs at when the caller names none.
+ *
+ * One desktop and one phone: a defect visible at one width regularly vanishes
+ * at the other, and a single width would let it through.
+ */
+export const DEFAULT_SIDE_WIDTHS: number[] = [1440, 390]
 
 /**
  * The computed properties that decide whether something looks right.
@@ -138,6 +147,9 @@ export type ResolvedCheckOptions = Required<Omit<CheckOptions, 'onProgress'>>
 /** Every diff option with its default filled in. */
 export type ResolvedDiffOptions = Required<Omit<DiffOptions, 'onProgress'>>
 
+/** Every side by side option with its default filled in. */
+export type ResolvedSideOptions = Required<Omit<SideOptions, 'onProgress'>>
+
 /**
  * Fill in the browser defaults.
  *
@@ -207,5 +219,34 @@ export function resolveDiffOptions(options: DiffOptions): ResolvedDiffOptions {
     threshold: options.threshold ?? 0.5,
     masks: options.masks ?? [],
     outDir: options.outDir ?? tmpdir(),
+  }
+}
+
+/**
+ * Fill in the side by side defaults.
+ *
+ * `outDir` has no default: the composed images are the product of the run, so
+ * the caller says where they go rather than having to find them afterwards.
+ *
+ * @example
+ * ```ts
+ * const resolved = resolveSideOptions({ referenceUrl, targetUrl, outDir: './side' })
+ * // resolved.widths === [1440, 390], resolved.columnWidth === 900
+ * ```
+ */
+export function resolveSideOptions(options: SideOptions): ResolvedSideOptions {
+  return {
+    ...resolveBrowserOptions(options),
+    referenceUrl: options.referenceUrl,
+    targetUrl: options.targetUrl,
+    outDir: options.outDir,
+    widths: options.widths ?? [...DEFAULT_SIDE_WIDTHS],
+    sectionsSelector: options.sectionsSelector ?? null,
+    freezeAnimations: options.freezeAnimations ?? true,
+    only: options.only ?? null,
+    threshold: options.threshold ?? 0.5,
+    minSectionHeight: options.minSectionHeight ?? 24,
+    columnWidth: options.columnWidth ?? 900,
+    masks: options.masks ?? [],
   }
 }

@@ -116,6 +116,60 @@ Hidden layers, and everything under them, are skipped. Hover, focus and pseudo
 element states are absent, because Figma has none to read, so a check against a
 Figma contract never reports them.
 
+## Side by side, section by section
+
+`check` returns properties and `diff` returns one percentage for a whole page.
+Neither says **where** the page is wrong. `side` splits both pages into
+sections, pairs them by position, and writes one image per pair: the reference
+on the left, the implementation on the right, both at the same scale, the
+differing pixels boxed in red, and a header carrying the section, the width and
+the percentage.
+
+```ts
+import { formatSideReport, side } from 'pixelpact-core'
+
+const report = await side({
+  referenceUrl: 'https://reference.example',
+  targetUrl: 'http://localhost:3000',
+  outDir: './pixelpact/side',
+  widths: [1440, 390],
+})
+
+process.stdout.write(formatSideReport(report, { color: true }))
+process.exitCode = report.ok ? 0 : 1
+```
+
+```
+pixelpact side  FAILED
+  reference https://reference.example
+  target    http://localhost:3000
+  widths    1440px, 390px
+  sections  5 passed, 1 failed of 6 (threshold 0.5%)
+
+#   SECTION  WIDTH   VERDICT  DIFF
+01  hero     1440px  PASS     0.000%
+02  pricing  1440px  FAIL     1.193%
+  ./pixelpact/side/1440/02-pricing.png
+03  contact  1440px  PASS     0.000%
+```
+
+Sections are the visible element children of `sectionsSelector`, or of `main`
+when the page has one and `body` otherwise. Each one is named after its `id`,
+then its first heading, then its position, and that name is both the slug in the
+report and the file name of the image.
+
+Pairing is by position. When the two pages disagree on how many sections they
+have, the surplus is counted in `unmatched` and named in `warnings` rather than
+paired with a guess: a report that invented a counterpart would show a picture
+of one section under the name of another. `ok` is true when every compared
+section is inside `threshold` **and** nothing was left unmatched.
+
+Run one section at a time with `only`, by index or by part of its slug:
+
+```ts
+await side({ referenceUrl, targetUrl, outDir: './side', only: 'pricing' })
+```
+
 ## API
 
 | Function | What it does |
@@ -127,11 +181,13 @@ Figma contract never reports them.
 | `figmaMatchHint(report)` | The `data-contract` advice, when a Figma check matched nothing |
 | `check(contract, options)` | Compare a live implementation against the contract |
 | `diff(contract, options)` | Compare the implementation to the reference screenshot, pixel by pixel |
+| `side(options)` | Compare two live pages section by section and compose one image per section |
 | `parseContract(input)` | Validate unknown data as a contract |
 | `readContract(path)` | Read and validate a contract from disk |
 | `writeContract(path, contract)` | Validate and write a contract as JSON |
 | `formatCheckReport(report, options)` | Render a check report as an aligned table |
 | `formatDiffReport(report, options)` | Render a diff report as a few lines |
+| `formatSideReport(report, options)` | Render a side by side report as one row per section |
 | `DEFAULT_VIEWPORTS` | desktop 1440x900, tablet 768x1024, mobile 390x844 |
 
 ### Options
@@ -145,6 +201,10 @@ time zone `UTC`, and the browser's own user agent.
 `freezeAnimations`, `fullPage` and `screenshotDir`.
 `check` adds `viewport`, `selector`, `tolerance` and `maxStates`.
 `diff` adds `viewport`, `selector`, `threshold`, `masks` and `outDir`.
+`side` takes `referenceUrl`, `targetUrl` and `outDir` instead of `url`, and adds
+`widths`, `sectionsSelector`, `only`, `threshold`, `minSectionHeight`,
+`columnWidth` and `masks`. Its `outDir` has no default: the composed images are
+the product of the run, so the caller says where they go.
 
 `extractFromFigma` launches no browser, so none of the browser options apply to
 it. It takes `url`, `token`, `nodeId`, `viewportName`, `maxElements`,

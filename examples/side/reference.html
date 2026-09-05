@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Reference</title>
+<style>
+  :root { --brand: rgb(11,114,133); --ink: rgb(23,23,23); --muted: rgb(87,83,78); --line: rgb(231,229,228); }
+  * { box-sizing: border-box; }
+  body { margin:0; font-family: Georgia, serif; color: var(--ink); background: rgb(250,250,249); }
+  main { max-width: 1040px; margin: 0 auto; }
+  section { padding: 56px 32px; border-bottom: 1px solid var(--line); }
+  h1 { font-size: 44px; line-height: 52px; margin: 0 0 16px; letter-spacing: -0.5px; }
+  h2 { font-size: 26px; line-height: 32px; margin: 0 0 24px; }
+  p { font-size: 17px; line-height: 27px; margin: 0 0 20px; color: var(--muted); max-width: 640px; }
+  .cta { display:inline-block; padding: 12px 24px; border-radius: 8px; background: var(--brand); color:#fff; text-decoration:none; font-size:16px; }
+  .cards { display:flex; gap: 20px; }
+  .cards div { flex:1; padding: 20px; border:1px solid var(--line); border-radius: 12px; background:#fff; }
+  .cards h3 { margin:0 0 8px; font-size:18px; }
+  .cards p { margin:0; font-size:15px; line-height:23px; }
+  .plans { display:flex; gap: 20px; }
+  .plans article { flex:1; padding: 24px; border:2px solid var(--brand); border-radius: 14px; background:#fff; }
+  .price { font-size: 34px; margin: 0 0 12px; color: var(--ink); }
+  footer { padding: 32px; font-size: 14px; color: var(--muted); text-align:center; }
+</style></head>
+<body><main>
+  <section id="hero"><h1>Measure the page, do not argue about it</h1>
+    <p>A contract holds every value the reference renders, so a design review becomes arithmetic instead of opinion.</p>
+    <a class="cta" href="#start">Get started</a></section>
+  <section id="features"><h2>What it measures</h2>
+    <div class="cards">
+      <div><h3>Sizes</h3><p>Boxes, spacing and typography, every value the browser computes.</p></div>
+      <div><h3>States</h3><p>Hover and focus, stored only where they actually change.</p></div>
+      <div><h3>Motion</h3><p>Named keyframes and the timing that drives them.</p></div>
+    </div></section>
+  <section id="pricing"><h2>Plans</h2>
+    <div class="plans">
+      <article><p class="price">Free</p><p>Everything in the command line, forever.</p></article>
+      <article><p class="price">Team</p><p>Shared contracts and a review dashboard.</p></article>
+    </div></section>
+  <footer id="foot">Built for people who would rather read a number than an opinion.</footer>
+</main></body></html>

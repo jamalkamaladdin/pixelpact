@@ -195,6 +195,38 @@ assertions pass, which is the property that matters: a passing check has to mean
 
 Add `--json` to get the same report as a data structure, which is what CI jobs and agents read.
 
+## What a side by side run shows
+
+`check` says which values moved. `diff` says how many pixels moved. Neither tells a person
+where to look. `side` splits both pages into sections, puts them next to each other, and boxes
+what differs.
+
+```bash
+npx pixelpact side https://reference.example.com http://localhost:3000 --widths 1440,390
+```
+
+```text
+#   SECTION   WIDTH   VERDICT  DIFF
+01  hero      1440px  PASS     0.000%
+02  features  1440px  FAIL     0.675%
+  .pixelpact/side/1440/02-features.png
+03  pricing   1440px  PASS     0.000%
+04  foot      1440px  FAIL     1.265%
+  .pixelpact/side/1440/04-foot.png
+```
+
+![One section compared side by side, differences boxed in red](assets/side-example.png)
+
+That is a real run against the two files in [`examples/side`](./examples/side), which are
+copies of one page where the card gap and the corner radius were changed. Reproduce it with:
+
+```bash
+npx pixelpact side "file://$PWD/examples/side/reference.html" \
+                   "file://$PWD/examples/side/implementation.html" --widths 1440
+```
+
+This is the command to run before telling anyone that a page is finished.
+
 ## Features
 
 <table>
@@ -222,6 +254,7 @@ Add `--json` to get the same report as a data structure, which is what CI jobs a
 | `pixelpact extract <url>`            | Reads the reference and writes a contract file                 |
 | `pixelpact check <contract> <url>`   | Measures an implementation, prints deviations, sets exit code  |
 | `pixelpact diff <contract> <url>`    | Pixel comparison against the screenshot stored in the contract |
+| `pixelpact side <reference> <url>`   | Section by section side by side images with the differences boxed |
 
 Shared flags cover the browser context (`--viewport`, `--selector`, `--wait`, `--timeout`,
 `--locale`, `--timezone`, `--channel`, `--headful`), the output (`--out`, `--json`,
@@ -349,12 +382,13 @@ nothing extra is allowed.
 
 ## Status
 
-Extraction from a live page and from Figma, checking, the pixel diff, the MCP server and the
-Action are built, and the numbers shown above come from a real run. Planned and not built yet,
-so nothing here describes them as available:
+Everything described above is built and every number shown came from a real run: extraction
+from a live page and from Figma, checking, the pixel diff, the side by side images, the MCP
+server and the Action.
 
-- Section by section side by side rendering as a first class command
-- Figma variables and published styles as a token source, beyond the color styles read today
+Next, and not available yet, so nothing here describes it as though it were:
+
+- Figma text and effect styles as a token source, beside the color styles read today
 
 ## Contributing
 

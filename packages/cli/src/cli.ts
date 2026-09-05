@@ -1,7 +1,7 @@
 import { writeFile } from 'node:fs/promises'
 import cac from 'cac'
 import pc from 'picocolors'
-import type { CheckReport, Contract, DiffReport, ProgressEvent } from 'pixelpact-core'
+import type { CheckReport, Contract, DiffReport, ProgressEvent, SideReport } from 'pixelpact-core'
 import {
   check,
   diff,
@@ -9,18 +9,22 @@ import {
   extractFromFigma,
   formatCheckReport,
   formatDiffReport,
+  formatSideReport,
   isFigmaUrl,
   readContract,
+  side,
   writeContract,
 } from 'pixelpact-core'
 import { shouldUseColor } from './color.js'
 import { describeError, EXIT_FAIL, EXIT_OK, EXIT_USAGE, exitCodeForReport } from './errors.js'
-import type { CheckFlags, DiffFlags, ExtractFlags } from './options.js'
+import type { CheckFlags, DiffFlags, ExtractFlags, SideFlags } from './options.js'
 import {
   buildCheckOptions,
   buildDiffOptions,
   buildExtractOptions,
   buildFigmaExtractOptions,
+  buildSideOptions,
+  DEFAULT_SIDE_OUT_DIR,
   findFigmaIncompatibleFlags,
   findHttpIncompatibleFlags,
   isMalformedFigmaUrl,
@@ -173,6 +177,32 @@ async function runDiff(
   return exitCodeForReport(report)
 }
 
+async function runSide(
+  referenceUrl: string,
+  targetUrl: string,
+  flags: SideFlags,
+  useColor: boolean,
+): Promise<number> {
+  const { sideOptions, json, quiet } = buildSideOptions(referenceUrl, targetUrl, flags)
+  const report: SideReport = await side({
+    ...sideOptions,
+    onProgress: makeProgressWriter(quiet),
+  })
+
+  if (json) {
+    printJson(report)
+    return exitCodeForReport(report)
+  }
+
+  process.stdout.write(`${formatSideReport(report, { color: useColor })}\n`)
+  // The images are the point of this command, so a failing report always says where to look.
+  if (!report.ok) {
+    process.stdout.write(`Images written to ${sideOptions.outDir}\n`)
+  }
+
+  return exitCodeForReport(report)
+}
+
 /** Builds and parses the CLI, then runs whichever command matched. Never calls `process.exit`. */
 export async function run(argv: string[]): Promise<number> {
   const useColor = shouldUseColor({
@@ -273,6 +303,42 @@ export async function run(argv: string[]): Promise<number> {
       exitCode = await runDiff(contractPath, url, flags, useColor)
     })
 
+  cli
+    .command(
+      'side <referenceUrl> <targetUrl>',
+      'Compare two pages section by section, side by side',
+    )
+    .option('--widths <list>', 'Comma separated list of viewport widths, default 1440,390')
+    .option(
+      '--sections <css>',
+      'Root selector whose direct children become sections, default: main then body',
+    )
+    .option('--only <n|slug>', 'Restrict the comparison to a single section, by index or slug')
+    .option('--threshold <pct>', 'Allowed percent of differing pixels per section, default 0.5')
+    .option(
+      '--out-dir <dir>',
+      `Directory to write the composed images to, default ${DEFAULT_SIDE_OUT_DIR}`,
+    )
+    .option('--mask <css>', 'CSS selector to mask out, repeatable', { type: [] })
+    .option(
+      '--column-width <px>',
+      'Width in pixels of each half of the composed image, default 900',
+    )
+    .option('--wait <ms>', 'Extra settle time in milliseconds')
+    .option('--timeout <ms>', 'Navigation timeout in milliseconds')
+    .option('--headful', 'Show the browser window instead of running headless')
+    .option('--channel <name>', 'Browser channel, e.g. chrome')
+    .option('--locale <tag>', 'Browser locale, e.g. en-US')
+    .option('--timezone <tz>', 'Browser timezone, e.g. UTC')
+    .option('--no-stealth', 'Disable stealth mode')
+    .option('--no-dismiss', 'Do not dismiss cookie banners and other overlays')
+    .option('--no-freeze', 'Do not freeze CSS animations before comparing')
+    .option('--json', 'Print the report as JSON to stdout instead of a summary')
+    .option('--quiet', 'Suppress progress output on stderr')
+    .action(async (referenceUrl: string, targetUrl: string, flags: SideFlags) => {
+      exitCode = await runSide(referenceUrl, targetUrl, flags, useColor)
+    })
+
   cli.help((sections) => {
     sections.push({
       title: 'Examples',
@@ -281,6 +347,7 @@ export async function run(argv: string[]): Promise<number> {
         '  $ pixelpact check example.contract.json https://staging.example.com --tolerance 2',
         '  $ pixelpact extract "https://www.figma.com/design/abc123/Site?node-id=1-23" \\',
         '      --figma-token $FIGMA_TOKEN --out figma.contract.json',
+        '  $ pixelpact side https://reference.example https://staging.example.com',
       ].join('\n'),
     })
     sections.push({
@@ -318,6 +385,8 @@ export async function run(argv: string[]): Promise<number> {
     } else if (commandName === 'check' || commandName === 'diff') {
       file = typeof args[0] === 'string' ? args[0] : undefined
       url = typeof args[1] === 'string' ? args[1] : undefined
+    } else if (commandName === 'side') {
+      url = typeof args[0] === 'string' ? args[0] : undefined
     }
     const { exitCode: code, message } = describeError(err, { file, url })
     process.stderr.write(`${paint.red('error:')} ${message}\n`)

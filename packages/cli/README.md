@@ -94,12 +94,35 @@ Pixel compares screenshots for an implementation against a contract's reference 
 | `--json` | Print the report as JSON to stdout instead of a summary. |
 | `--quiet` | Suppress progress output on stderr. |
 
+### `pixelpact side <referenceUrl> <targetUrl>`
+
+Splits the reference page and the target page into sections, puts each pair side by side,
+boxes the differing pixels in red and gives every section its own verdict. This is the
+command to run before telling anyone a page is finished; a passing `check` and `diff` do
+not show where a page is still wrong, this does.
+
+| Flag | Description |
+|---|---|
+| `--widths <list>` | Comma separated list of viewport widths. Default `1440,390`. |
+| `--sections <css>` | Root selector whose direct children become sections. Default: `main`, falling back to `body`. |
+| `--only <n\|slug>` | Restrict the comparison to a single section, by index or by slug. |
+| `--threshold <pct>` | Allowed percent of differing pixels per section. Default `0.5`. |
+| `--out-dir <dir>` | Directory to write the composed images to. Default `.pixelpact/side`. |
+| `--mask <css>` | CSS selector to mask out. Repeatable. |
+| `--column-width <px>` | Width in pixels of each half of the composed image. Default `900`. |
+| `--wait <ms>`, `--timeout <ms>`, `--headful`, `--channel <name>`, `--locale <tag>`, `--timezone <tz>`, `--no-stealth`, `--no-dismiss`, `--no-freeze` | Same as `extract`. |
+| `--json` | Print the report as JSON to stdout instead of a summary. |
+| `--quiet` | Suppress progress output on stderr. |
+
+When a section is outside its threshold, the summary ends with the directory the composed
+images were written to, since the images are the reason to run this command.
+
 ## Exit codes
 
 | Code | Meaning |
 |---|---|
-| `0` | Success, no deviations. |
-| `1` | Deviations found, or the pixel threshold was exceeded. |
+| `0` | Success, no deviations. Every `side` section is inside its threshold. |
+| `1` | Deviations found, the pixel threshold was exceeded, or a `side` section was outside its budget or unmatched. |
 | `2` | Usage error: bad flags or a missing file. |
 | `3` | Runtime failure: browser unavailable, navigation failed, the page blocked access, or a Figma request failed. |
 
@@ -120,4 +143,8 @@ pixelpact check example.contract.json https://staging.example.com --tolerance 2
 ```
 pixelpact extract "https://www.figma.com/design/abc123/Site?node-id=1-23" --out figma.contract.json
 pixelpact check figma.contract.json https://staging.example.com
+```
+
+```
+pixelpact side https://reference.example https://staging.example.com --out-dir .pixelpact/side
 ```

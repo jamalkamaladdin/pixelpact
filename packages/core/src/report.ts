@@ -1,5 +1,5 @@
 import { FIGMA_MATCH_RULE } from './figma/map.js'
-import type { CheckReport, Deviation, DiffReport, FormatOptions } from './types.js'
+import type { CheckReport, Deviation, DiffReport, FormatOptions, SideReport } from './types.js'
 
 /** ANSI control sequence introducer, built without an escape literal. */
 const CSI = `${String.fromCharCode(27)}[`
@@ -234,6 +234,120 @@ export function formatDiffReport(report: DiffReport, options: FormatOptions = {}
   if (!report.ok) {
     lines.push('')
     lines.push('Open the diff image: red marks every pixel that does not match.')
+  }
+
+  return lines.join('\n')
+}
+
+/** Section slugs stay readable well past this, so they are cut here. */
+const SLUG_CAP = 36
+
+/**
+ * Render a side by side report as an aligned table, one row per section.
+ *
+ * The path of the composed image is printed under every failing row and nowhere
+ * else: the picture is the thing to open when something is wrong, and printing
+ * it for sections that passed would bury it.
+ *
+ * @param options - `color` emits ANSI codes (default `false`), `limit` caps the
+ *   number of rows before a summary line (default `20`)
+ *
+ * @example
+ * ```ts
+ * const report = await side({ referenceUrl, targetUrl, outDir: './side' })
+ * process.stdout.write(formatSideReport(report, { color: true }))
+ * ```
+ */
+export function formatSideReport(report: SideReport, options: FormatOptions = {}): string {
+  const colour = options.color ?? false
+  const limit = options.limit ?? 20
+  const lines: string[] = []
+
+  const verdict = report.ok ? paint('PASSED', 'green', colour) : paint('FAILED', 'red', colour)
+  lines.push(`${paint('pixelpact side', 'bold', colour)}  ${verdict}`)
+  lines.push(field('reference', report.reference, colour))
+  lines.push(field('target', report.target, colour))
+  lines.push(field('widths', report.widths.map((width) => `${width}px`).join(', '), colour))
+  lines.push(
+    field(
+      'sections',
+      report.totals.passed +
+        ' passed, ' +
+        report.totals.failed +
+        ' failed of ' +
+        report.totals.sections +
+        ' (threshold ' +
+        report.threshold +
+        '%)',
+      colour,
+    ),
+  )
+
+  const orphans = report.unmatched.reference + report.unmatched.target
+  if (orphans > 0) {
+    lines.push(
+      field(
+        'unmatched',
+        `${report.unmatched.reference} in the reference, ` +
+          `${report.unmatched.target} in the implementation, none compared`,
+        colour,
+      ),
+    )
+  }
+
+  if (report.sections.length > 0) {
+    const shown = report.sections.slice(0, limit)
+    const rows = shown.map((section) => [
+      String(section.index).padStart(2, '0'),
+      truncate(section.slug, SLUG_CAP),
+      `${section.width}px`,
+      section.ok ? 'PASS' : 'FAIL',
+      `${section.differentPercent.toFixed(3)}%`,
+    ])
+    const head = ['#', 'SECTION', 'WIDTH', 'VERDICT', 'DIFF']
+    const widths = head.map((title, column) =>
+      Math.max(title.length, ...rows.map((row) => row[column].length)),
+    )
+
+    lines.push('')
+    lines.push(
+      paint(
+        head
+          .map((title, column) => pad(title, widths[column]))
+          .join('  ')
+          .trimEnd(),
+        'dim',
+        colour,
+      ),
+    )
+    for (let index = 0; index < rows.length; index++) {
+      const section = shown[index]
+      const cells = rows[index].map((cell, column) => {
+        const padded = pad(cell, widths[column])
+        if (column === 1) return paint(padded, 'cyan', colour)
+        if (column === 3 || column === 4) {
+          return paint(padded, section.ok ? 'green' : 'red', colour)
+        }
+        return padded
+      })
+      lines.push(cells.join('  ').trimEnd())
+      if (!section.ok) lines.push(`  ${paint(section.image, 'dim', colour)}`)
+    }
+    const hidden = report.sections.length - shown.length
+    if (hidden > 0) lines.push(paint(`${hidden} more`, 'dim', colour))
+  }
+
+  if (report.warnings.length > 0) {
+    lines.push('')
+    lines.push(paint(`warnings (${report.warnings.length})`, 'bold', colour))
+    for (const warning of report.warnings.slice(0, limit)) {
+      lines.push(`  ${paint(truncate(warning, 200), 'yellow', colour)}`)
+    }
+  }
+
+  if (report.ok) {
+    lines.push('')
+    lines.push('Every section is inside the pixel budget.')
   }
 
   return lines.join('\n')

@@ -33,7 +33,8 @@ export { extractFromFigma } from './figma/extract.js'
 export { FIGMA_MATCH_RULE } from './figma/map.js'
 export type { FigmaTarget } from './figma/url.js'
 export { isFigmaUrl, parseFigmaUrl } from './figma/url.js'
-export { figmaMatchHint, formatCheckReport, formatDiffReport } from './report.js'
+export { figmaMatchHint, formatCheckReport, formatDiffReport, formatSideReport } from './report.js'
+export { side } from './side/side.js'
 export type {
   Box,
   BrowserOptions,
@@ -53,6 +54,9 @@ export type {
   KeyframeStep,
   ProgressEvent,
   SerializedExtractOptions,
+  SideOptions,
+  SideReport,
+  SideSection,
   StyleMap,
   Viewport,
   ViewportSnapshot,
