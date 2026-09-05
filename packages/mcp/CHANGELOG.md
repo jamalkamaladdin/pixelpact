@@ -1,5 +1,12 @@
 # pixelpact-mcp
 
+## 0.1.3
+
+### Patch Changes
+
+- Updated dependencies [[`fb12404`](https://github.com/jamalkamaladdin/pixelpact/commit/fb1240499ee410b7988d98c328db7a6966a38de5)]:
+  - pixelpact-core@0.3.0
+
 ## 0.1.2
 
 ### Patch Changes
