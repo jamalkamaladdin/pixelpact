@@ -3,6 +3,7 @@ import {
   buildFigmaExtractOptions,
   findFigmaIncompatibleFlags,
   findHttpIncompatibleFlags,
+  isMalformedFigmaUrl,
   UsageError,
 } from '../src/options.js'
 
@@ -100,5 +101,22 @@ describe('buildFigmaExtractOptions', () => {
     expect(out).toBe('pixelpact.contract.json')
     expect(json).toBe(false)
     expect(quiet).toBe(false)
+  })
+})
+
+describe('a figma url with a broken file key', () => {
+  it('is reported as malformed instead of being treated as a web page', () => {
+    expect(isMalformedFigmaUrl('https://www.figma.com/design/AbC123/Demo?node-id=12-345')).toBe(
+      true,
+    )
+    expect(isMalformedFigmaUrl('https://figma.com/design//Demo')).toBe(true)
+  })
+
+  it('leaves a valid figma url and an ordinary url alone', () => {
+    expect(isMalformedFigmaUrl('https://www.figma.com/design/aBcDeFgHiJkLmNoPqRsTuV/Demo')).toBe(
+      false,
+    )
+    expect(isMalformedFigmaUrl('https://example.com/page')).toBe(false)
+    expect(isMalformedFigmaUrl('not a url at all')).toBe(false)
   })
 })

@@ -6,7 +6,7 @@ import type {
   FigmaExtractOptions,
   Viewport,
 } from 'pixelpact-core'
-import { DEFAULT_VIEWPORTS } from 'pixelpact-core'
+import { DEFAULT_VIEWPORTS, isFigmaUrl } from 'pixelpact-core'
 
 /**
  * Thrown for anything the user typed wrong: a bad flag value, an unknown viewport
@@ -215,6 +215,22 @@ const FIGMA_INCOMPATIBLE_FLAGS: FlagPresence[] = [
  * Finds which browser only flags of `extract` were passed alongside a Figma source, so
  * the caller can fail loudly with exit code 2 instead of silently ignoring them.
  */
+const FIGMA_HOSTS = new Set(['figma.com', 'www.figma.com'])
+
+/**
+ * True when the source points at figma.com but carries no usable file key. That is a typo in
+ * the url, not a web page to measure, and saying so beats treating it as a page to load.
+ */
+export function isMalformedFigmaUrl(source: string): boolean {
+  let host: string
+  try {
+    host = new URL(source).hostname.toLowerCase()
+  } catch {
+    return false
+  }
+  return FIGMA_HOSTS.has(host) && !isFigmaUrl(source)
+}
+
 export function findFigmaIncompatibleFlags(flags: ExtractFlags): string[] {
   return FIGMA_INCOMPATIBLE_FLAGS.filter(({ isPresent }) => isPresent(flags)).map(
     ({ flag }) => flag,

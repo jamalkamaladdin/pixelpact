@@ -23,6 +23,7 @@ import {
   buildFigmaExtractOptions,
   findFigmaIncompatibleFlags,
   findHttpIncompatibleFlags,
+  isMalformedFigmaUrl,
   UsageError,
 } from './options.js'
 import { getVersion } from './version.js'
@@ -64,6 +65,12 @@ async function runExtract(source: string, flags: ExtractFlags, paint: Paint): Pr
   let out: string
   let json: boolean
   let quiet: boolean
+
+  if (isMalformedFigmaUrl(source)) {
+    throw new UsageError(
+      `"${source}" points at figma.com but no file key could be read from it. A Figma url looks like https://www.figma.com/design/<fileKey>/<name>?node-id=1-23.`,
+    )
+  }
 
   if (isFigmaUrl(source)) {
     const incompatible = findFigmaIncompatibleFlags(flags)
@@ -180,7 +187,7 @@ export async function run(argv: string[]): Promise<number> {
 
   cli
     .command('extract <source>', 'Extract a visual contract from a live page or a Figma file')
-    .option('--out <path>', 'Where to write the contract JSON', {
+    .option('-o, --out <path>', 'Where to write the contract JSON', {
       default: 'pixelpact.contract.json',
     })
     .option('--selector <css>', 'Restrict extraction to this CSS selector (http source only)')
@@ -229,7 +236,7 @@ export async function run(argv: string[]): Promise<number> {
     .option('--viewport <name>', 'Viewport name to check, default: the first one in the contract')
     .option('--selector <css>', 'Root selector to check, default: the contract root')
     .option('--tolerance <px>', 'Pixel tolerance for box and length values, default 1')
-    .option('--out <path>', 'Also write the report JSON to this path')
+    .option('-o, --out <path>', 'Also write the report JSON to this path')
     .option('--max-states <n>', 'Maximum number of interactive elements to probe, default 120')
     .option('--wait <ms>', 'Extra settle time in milliseconds')
     .option('--timeout <ms>', 'Navigation timeout in milliseconds')
