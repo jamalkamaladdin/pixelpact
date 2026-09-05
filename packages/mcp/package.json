@@ -1,6 +1,6 @@
 {
   "name": "pixelpact-mcp",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "type": "module",
   "description": "MCP server that lets a coding agent measure its own UI work against a visual contract",
   "keywords": [
