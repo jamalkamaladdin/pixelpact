@@ -50,7 +50,7 @@ pnpm exec playwright install chromium
 ```
 
 `playwright` is a peer dependency, so the browser download stays under your control and a
-project that already has Playwright installs nothing extra. Node 20.19 or newer is required.
+project that already has Playwright installs nothing extra. Node 22.12 or newer is required.
 
 ## Quickstart
 
@@ -209,6 +209,24 @@ then let the agent check its own work, read the deviation list, fix, and check a
 Tools exposed: `extract_contract`, `check_implementation`, `diff_pixels`,
 `read_contract_summary`.
 
+## In CI
+
+The Action measures a preview deployment against the contract committed in the repository and
+keeps a single pull request comment up to date instead of adding one per push.
+
+```yaml
+- uses: jamalkamaladdin/pixelpact/action@v0
+  with:
+    contract: contract.json
+    url: ${{ steps.preview.outputs.url }}
+    viewport: desktop
+    tolerance: 1
+```
+
+It needs `permissions: pull-requests: write` and no secret beyond the automatic
+`GITHUB_TOKEN`. Every input, every output and a complete workflow are in
+[action/README.md](./action/README.md).
+
 ## How it works
 
 1. Playwright opens the reference at each requested viewport, waits for fonts, network and
@@ -230,15 +248,15 @@ Tools exposed: `extract_contract`, `check_implementation`, `diff_pixels`,
 | [`packages/core`](./packages/core)     | `@pixelpact/core`  | Extraction, checking, reporting |
 | [`packages/cli`](./packages/cli)       | `pixelpact`        | The `pixelpact` command         |
 | [`packages/mcp`](./packages/mcp)       | `@pixelpact/mcp`   | MCP server for coding agents    |
+| [`action`](./action)                   | used from GitHub   | Action for pull request checks  |
 
 ## Status
 
-Version 0.1. The extraction and checking path is what the project is built around and it is in
-daily use. The items below are planned and not built yet, so nothing in this README describes
-them as available:
+Version 0.1. Extraction, checking, the pixel diff, the MCP server and the Action are built,
+and the numbers shown above come from a real run. Planned and not built yet, so nothing here
+describes them as available:
 
 - Figma as a contract source, next to live urls
-- A GitHub Action that posts the deviation table on a pull request
 - Section by section side by side rendering as a first class command
 
 ## Contributing

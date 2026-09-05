@@ -4,7 +4,7 @@ Thanks for looking at the code. This document assumes you have never seen this r
 
 ## Prerequisites
 
-- Node 20.19 or newer.
+- Node 22.12 or newer.
 - pnpm 11 (this repo uses pnpm workspaces, not npm or yarn).
 - For anything that touches a real browser (extracting a contract, running a check against a live page): `pnpm exec playwright install chromium`. A normal `pnpm install` does not download browser binaries, so tests or commands that launch Playwright will fail until you run this once.
 

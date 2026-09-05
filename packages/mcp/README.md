@@ -32,5 +32,5 @@ A typical loop: `extract_contract` once against the reference design, then
 
 ## Requirements
 
-Node >= 20.19. Playwright browsers must be installed separately, for example
+Node >= 22.12. Playwright browsers must be installed separately, for example
 `pnpm exec playwright install chromium`, since `playwright` is a peer dependency.

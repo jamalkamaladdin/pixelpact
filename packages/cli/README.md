@@ -11,7 +11,7 @@ pnpm exec playwright install chromium
 ```
 
 `playwright` is a peer dependency, so the browser download stays under your control. Node
-20.19 or newer is required.
+22.12 or newer is required.
 
 ## Commands
 
