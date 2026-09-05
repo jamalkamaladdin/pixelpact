@@ -1,0 +1,8 @@
+
+.env
+.env.local
+.direnv/
+docs/
+CLAUDE.md
+AGENTS.md
+!.env.example
