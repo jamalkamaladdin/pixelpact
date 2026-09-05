@@ -1,4 +1,4 @@
-import type { Deviation } from '@pixelpact/core'
+import type { Deviation } from 'pixelpact-core'
 import { describe, expect, it } from 'vitest'
 import { capDeviations, omittedRowsNote } from '../src/format.js'
 

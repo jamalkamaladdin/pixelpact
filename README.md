@@ -173,7 +173,7 @@ Shared flags cover the browser context (`--viewport`, `--selector`, `--wait`, `-
 ## Programmatic use
 
 ```ts
-import { extract, check, formatCheckReport, writeContract } from '@pixelpact/core'
+import { extract, check, formatCheckReport, writeContract } from 'pixelpact-core'
 
 const contract = await extract({
   url: 'https://reference.example.com',
@@ -193,7 +193,7 @@ malformed file fails with a readable message instead of a stack trace.
 
 ## For coding agents
 
-An agent that writes UI code cannot tell whether it succeeded. `@pixelpact/mcp` gives it the
+An agent that writes UI code cannot tell whether it succeeded. `pixelpact-mcp` gives it the
 measurement, so the loop closes without a person in the middle: extract the contract once,
 then let the agent check its own work, read the deviation list, fix, and check again.
 
@@ -201,7 +201,7 @@ then let the agent check its own work, read the deviation list, fix, and check a
 // .mcp.json
 {
   "mcpServers": {
-    "pixelpact": { "command": "npx", "args": ["-y", "@pixelpact/mcp"] }
+    "pixelpact": { "command": "npx", "args": ["-y", "pixelpact-mcp"] }
   }
 }
 ```
@@ -245,9 +245,9 @@ It needs `permissions: pull-requests: write` and no secret beyond the automatic
 
 | Package                                | Published as       | What it is                      |
 | -------------------------------------- | ------------------ | ------------------------------- |
-| [`packages/core`](./packages/core)     | `@pixelpact/core`  | Extraction, checking, reporting |
+| [`packages/core`](./packages/core)     | `pixelpact-core`  | Extraction, checking, reporting |
 | [`packages/cli`](./packages/cli)       | `pixelpact`        | The `pixelpact` command         |
-| [`packages/mcp`](./packages/mcp)       | `@pixelpact/mcp`   | MCP server for coding agents    |
+| [`packages/mcp`](./packages/mcp)       | `pixelpact-mcp`   | MCP server for coding agents    |
 | [`action`](./action)                   | used from GitHub   | Action for pull request checks  |
 
 ## Status

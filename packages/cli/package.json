@@ -44,7 +44,7 @@
     "typecheck": "tsc -p tsconfig.json"
   },
   "dependencies": {
-    "@pixelpact/core": "workspace:^",
+    "pixelpact-core": "workspace:^",
     "cac": "^7.0.0",
     "picocolors": "^1.1.1"
   },

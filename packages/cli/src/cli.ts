@@ -1,5 +1,7 @@
 import { writeFile } from 'node:fs/promises'
-import type { CheckReport, DiffReport, ProgressEvent } from '@pixelpact/core'
+import cac from 'cac'
+import pc from 'picocolors'
+import type { CheckReport, DiffReport, ProgressEvent } from 'pixelpact-core'
 import {
   check,
   diff,
@@ -8,9 +10,7 @@ import {
   formatDiffReport,
   readContract,
   writeContract,
-} from '@pixelpact/core'
-import cac from 'cac'
-import pc from 'picocolors'
+} from 'pixelpact-core'
 import { shouldUseColor } from './color.js'
 import { describeError, EXIT_FAIL, EXIT_OK, EXIT_USAGE, exitCodeForReport } from './errors.js'
 import type { CheckFlags, DiffFlags, ExtractFlags } from './options.js'

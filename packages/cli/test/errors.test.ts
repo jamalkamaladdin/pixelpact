@@ -1,4 +1,4 @@
-import { BrowserUnavailableError, ContractError } from '@pixelpact/core'
+import { BrowserUnavailableError, ContractError } from 'pixelpact-core'
 import { describe, expect, it } from 'vitest'
 import {
   describeError,

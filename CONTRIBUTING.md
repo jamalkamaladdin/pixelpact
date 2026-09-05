@@ -22,9 +22,9 @@ That installs dependencies for every package in the workspace in one step.
 
 | Package | Published as | What it is |
 |---|---|---|
-| `packages/core` | `@pixelpact/core` | Extracts a visual contract from a reference page and measures an implementation against it. |
+| `packages/core` | `pixelpact-core` | Extracts a visual contract from a reference page and measures an implementation against it. |
 | `packages/cli` | `pixelpact` | The command line tool most users install, bin name `pixelpact`. |
-| `packages/mcp` | `@pixelpact/mcp` | An MCP server so a coding agent can run the same checks itself. |
+| `packages/mcp` | `pixelpact-mcp` | An MCP server so a coding agent can run the same checks itself. |
 
 ## Commands
 
@@ -44,7 +44,7 @@ A pull request is expected to pass lint, typecheck, test and build before review
 
 1. Create a branch off `main`.
 2. Make your change inside the relevant package. Keep the diff scoped to one concern.
-3. If the change affects anything a user of `@pixelpact/core`, `pixelpact`, or `@pixelpact/mcp` would notice (a new flag, a fixed bug, a behavior change), add a changeset:
+3. If the change affects anything a user of `pixelpact-core`, `pixelpact`, or `pixelpact-mcp` would notice (a new flag, a fixed bug, a behavior change), add a changeset:
 
    ```bash
    pnpm changeset
@@ -75,7 +75,7 @@ fix(core): handle relative urls in extracted contract
 docs(mcp): document the check tool's response shape
 ```
 
-Scope is usually the package name without the `@pixelpact/` prefix (`core`, `cli`, `mcp`), or `repo` for changes that span the whole project.
+Scope is usually the short package name (`core`, `cli`, `mcp`, `action`), or `repo` for changes that span the whole project.
 
 ## What a good pull request looks like
 

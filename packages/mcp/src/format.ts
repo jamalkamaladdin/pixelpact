@@ -1,4 +1,4 @@
-import type { Deviation } from '@pixelpact/core'
+import type { Deviation } from 'pixelpact-core'
 
 export interface CappedDeviations {
   kept: Deviation[]

@@ -10,7 +10,7 @@ From the repository root:
 ```bash
 pnpm install
 pnpm exec playwright install chromium
-pnpm --filter @pixelpact/example-basic start https://reference.example.com http://localhost:3000
+pnpm --filter pixelpact-example-basic start https://reference.example.com http://localhost:3000
 ```
 
 Or from this directory:

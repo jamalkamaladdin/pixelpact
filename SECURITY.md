@@ -8,8 +8,8 @@ package receives security fixes.
 | Package | Version | Supported |
 |---|---|---|
 | `pixelpact` | latest 0.x | yes |
-| `@pixelpact/core` | latest 0.x | yes |
-| `@pixelpact/mcp` | latest 0.x | yes |
+| `pixelpact-core` | latest 0.x | yes |
+| `pixelpact-mcp` | latest 0.x | yes |
 | any package | older 0.x | no |
 
 Once the project reaches 1.0, this table will be updated with a real support

@@ -1,4 +1,4 @@
-# @pixelpact/core
+# pixelpact-core
 
 Measure what a reference page actually looks like, store it as a contract, then
 hold an implementation to that contract.
@@ -12,7 +12,7 @@ framework has to reproduce. The contract is measured, not written by hand, so
 ## Install
 
 ```sh
-npm install @pixelpact/core
+npm install pixelpact-core
 npm install playwright        # peer dependency
 npx playwright install chromium
 ```
@@ -23,7 +23,7 @@ and formatting contracts works without a browser installed.
 ## Quick start
 
 ```ts
-import { check, extract, formatCheckReport, writeContract } from '@pixelpact/core'
+import { check, extract, formatCheckReport, writeContract } from 'pixelpact-core'
 
 const contract = await extract({
   url: 'https://reference.example',

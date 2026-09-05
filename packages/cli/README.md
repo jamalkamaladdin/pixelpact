@@ -1,6 +1,6 @@
 # pixelpact
 
-Command line interface for `@pixelpact/core`: extract a visual contract from a live page,
+Command line interface for `pixelpact-core`: extract a visual contract from a live page,
 then measure or diff an implementation against it.
 
 ## Install

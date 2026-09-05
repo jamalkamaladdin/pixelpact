@@ -4,7 +4,7 @@
  *
  * @example
  * ```ts
- * import { check, extract, formatCheckReport, writeContract } from '@pixelpact/core'
+ * import { check, extract, formatCheckReport, writeContract } from 'pixelpact-core'
  *
  * const contract = await extract({ url: 'https://reference.example', selector: 'main' })
  * await writeContract('./pixelpact/contract.json', contract)

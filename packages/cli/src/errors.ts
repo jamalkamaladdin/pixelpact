@@ -4,7 +4,7 @@ import {
   ContractError,
   PixelpactError,
   TargetNotFoundError,
-} from '@pixelpact/core'
+} from 'pixelpact-core'
 import { UsageError } from './options.js'
 
 /** Exit codes documented in the CLI help text and the README. */

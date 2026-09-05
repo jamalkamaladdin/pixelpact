@@ -1,5 +1,5 @@
 {
-  "name": "@pixelpact/mcp",
+  "name": "pixelpact-mcp",
   "version": "0.1.0",
   "type": "module",
   "description": "MCP server that lets a coding agent measure its own UI work against a visual contract",
@@ -44,7 +44,7 @@
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.30.0",
-    "@pixelpact/core": "workspace:^",
+    "pixelpact-core": "workspace:^",
     "zod": "^4.5.4"
   },
   "peerDependencies": {

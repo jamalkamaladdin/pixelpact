@@ -8,7 +8,7 @@
  *   pnpm exec playwright install chromium
  */
 import { mkdir } from 'node:fs/promises'
-import { check, extract, formatCheckReport, writeContract } from '@pixelpact/core'
+import { check, extract, formatCheckReport, writeContract } from 'pixelpact-core'
 
 const [referenceUrl, implementationUrl] = process.argv.slice(2)
 

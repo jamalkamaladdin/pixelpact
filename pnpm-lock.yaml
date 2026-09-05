@@ -32,7 +32,7 @@ importers:
 
   examples/basic:
     dependencies:
-      '@pixelpact/core':
+      pixelpact-core:
         specifier: workspace:^
         version: link:../../packages/core
       playwright:
@@ -41,15 +41,15 @@ importers:
 
   packages/cli:
     dependencies:
-      '@pixelpact/core':
-        specifier: workspace:^
-        version: link:../core
       cac:
         specifier: ^7.0.0
         version: 7.0.0
       picocolors:
         specifier: ^1.1.1
         version: 1.1.1
+      pixelpact-core:
+        specifier: workspace:^
+        version: link:../core
     devDependencies:
       '@types/node':
         specifier: ^26.4.1
@@ -85,7 +85,7 @@ importers:
       '@modelcontextprotocol/sdk':
         specifier: ^1.30.0
         version: 1.30.0(zod@4.5.4)
-      '@pixelpact/core':
+      pixelpact-core:
         specifier: workspace:^
         version: link:../core
       zod:

@@ -1,5 +1,5 @@
 {
-  "name": "@pixelpact/core",
+  "name": "pixelpact-core",
   "version": "0.1.0",
   "type": "module",
   "description": "Extract a visual contract from a reference page and measure an implementation against it",

@@ -1,12 +1,12 @@
-# @pixelpact/mcp
+# pixelpact-mcp
 
 An MCP server that lets a coding agent measure its own UI work against a visual contract,
-without a human in the loop. It wraps `@pixelpact/core`.
+without a human in the loop. It wraps `pixelpact-core`.
 
 ## Install
 
 ```
-pnpm add -D @pixelpact/mcp
+pnpm add -D pixelpact-mcp
 ```
 
 ## Run

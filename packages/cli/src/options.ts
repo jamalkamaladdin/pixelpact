@@ -4,8 +4,8 @@ import type {
   DiffOptions,
   ExtractOptions,
   Viewport,
-} from '@pixelpact/core'
-import { DEFAULT_VIEWPORTS } from '@pixelpact/core'
+} from 'pixelpact-core'
+import { DEFAULT_VIEWPORTS } from 'pixelpact-core'
 
 /**
  * Thrown for anything the user typed wrong: a bad flag value, an unknown viewport

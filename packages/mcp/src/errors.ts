@@ -37,7 +37,7 @@ function readMessage(error: unknown): string {
 
 /**
  * Turns any thrown value into a tool result the calling agent can act on.
- * Keys off the `code` string that every `@pixelpact/core` error carries instead of
+ * Keys off the `code` string that every `pixelpact-core` error carries instead of
  * `instanceof` checks, so this also works for plain objects in tests and across
  * duplicate module instances.
  */

@@ -1,4 +1,4 @@
-import type { CheckReport } from '@pixelpact/core'
+import type { CheckReport } from 'pixelpact-core'
 import {
   check,
   diff,
@@ -6,7 +6,7 @@ import {
   formatCheckReport,
   readContract,
   writeContract,
-} from '@pixelpact/core'
+} from 'pixelpact-core'
 import { capDeviations, omittedRowsNote } from './format.js'
 import type {
   CheckImplementationInput,
