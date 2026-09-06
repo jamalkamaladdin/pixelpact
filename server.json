@@ -2,7 +2,7 @@
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
   "name": "io.github.jamalkamaladdin/pixelpact",
   "title": "pixelpact",
-  "description": "Extract a visual contract from a reference page or Figma frame and measure an implementation against it",
+  "description": "Extract a visual contract from a reference page and measure an implementation against it",
   "version": "0.1.6",
   "repository": {
     "url": "https://github.com/jamalkamaladdin/pixelpact",
