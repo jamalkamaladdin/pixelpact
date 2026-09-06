@@ -1,6 +1,7 @@
 {
   "name": "pixelpact-mcp",
   "version": "0.1.5",
+  "mcpName": "io.github.jamalkamaladdin/pixelpact",
   "type": "module",
   "description": "MCP server that lets a coding agent measure the UI it just built against the reference",
   "keywords": [
