@@ -1,5 +1,11 @@
 # pixelpact-mcp
 
+## 0.1.6
+
+### Patch Changes
+
+- [`5a7d29b`](https://github.com/jamalkamaladdin/pixelpact/commit/5a7d29bdce20c636e260f72c32c6c5386db6d171) Thanks [@jamalkamaladdin](https://github.com/jamalkamaladdin)! - Add the `mcpName` field so the package can be verified by the official MCP Registry
+
 ## 0.1.5
 
 ### Patch Changes
