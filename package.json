@@ -25,12 +25,12 @@
     "release": "pnpm build && changeset publish"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.5.12",
+    "@biomejs/biome": "2.5.14",
     "@changesets/changelog-github": "^1.0.1",
-    "@changesets/cli": "^3.0.2",
-    "@types/node": "^26.4.1",
-    "@vitest/coverage-v8": "^5.0.0",
+    "@changesets/cli": "^3.0.3",
+    "@types/node": "^26.6.1",
+    "@vitest/coverage-v8": "^5.0.1",
     "typescript": "^7.0.2",
-    "vitest": "^5.0.0"
+    "vitest": "^5.0.1"
   }
 }
