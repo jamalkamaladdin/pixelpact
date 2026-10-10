@@ -45,9 +45,9 @@
     "typecheck": "tsc -p tsconfig.json"
   },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.30.0",
+    "@modelcontextprotocol/sdk": "^1.32.1",
     "pixelpact-core": "workspace:^",
-    "zod": "^4.5.4"
+    "zod": "^4.6.5"
   },
   "peerDependencies": {
     "playwright": ">=1.45.0"
